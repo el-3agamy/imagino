@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { languages, defaultLang } from "@/src/i18n/settings";
+import { languages, defaultLang } from "@/i18n/settings";
 
 export function middleware(req: { nextUrl: { pathname: string; }; url: string | URL | undefined; }) {
   const pathname = req.nextUrl.pathname;

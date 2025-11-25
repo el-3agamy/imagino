@@ -1,5 +1,10 @@
-import React from "react";
+import LoginForm from "@/components/auth/LoginForm/LoginForm";
+import { Metadata } from "next";
 
-export default function Login() {
-  return <div>Login</div>;
+export const metadata: Metadata ={
+  title: "IMAGINO - Login",
+  description: "Welcome Back, Sign in to your account Now!"
+}
+export default function LoginPage() {
+  return <LoginForm />;
 }
