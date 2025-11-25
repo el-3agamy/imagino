@@ -2,7 +2,7 @@ import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm/ForgotP
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "WDI - Forget Password",
+  title: "IMAGINO - Forget Password",
 };
 
 export default function ForgetPasswordPage() {
