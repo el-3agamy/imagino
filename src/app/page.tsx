@@ -1,6 +1,11 @@
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return (
-   <div className="bg-purple-300 text-5xl text-center py-2.5 mt-2.5">welcom Guys from Other side ; where No where !!</div>
-  );
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const param = await params;
+  const lang = param.lang || "en";
+  redirect(`/${lang}`);
 }
