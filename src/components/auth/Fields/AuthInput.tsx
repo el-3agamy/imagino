@@ -27,7 +27,7 @@ export const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            "h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#F5F5F7] px-3 text-sm text-foreground",
+            "h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#ffffff] px-3 text-sm text-foreground",
             "placeholder:text-muted-foreground/70",
             "focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent",
             "transition-shadow",

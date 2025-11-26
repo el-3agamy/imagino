@@ -31,7 +31,7 @@ export const AuthSelect = React.forwardRef<HTMLSelectElement, AuthSelectProps>(
           id={selectId}
           ref={ref}
           className={cn(
-            "h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#F5F5F7] px-3 text-sm text-foreground",
+            "h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#ffffff] px-3 text-sm text-foreground",
             "focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent",
             error && "border-red-500 focus:ring-red-500",
             className

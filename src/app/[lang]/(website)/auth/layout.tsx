@@ -17,14 +17,14 @@ export default function AuthRootLayout({ children }: AuthLayoutProps) {
           w-full max-w-md rounded-3xl
           shadow-[0_18px_45px_rgba(15,23,42,0.18)]
           px-6 py-8
-          sm:bg-white sm:bg-none sm:px-8 sm:py-10
+          bg-white sm:px-8 sm:py-10
         "
       >
         <div className="mb-4 flex items-center justify-between">
           <Link
             href="/"
             aria-label="Back to home page"
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-[#7C3BED] hover:underline transition-all duration-200"
+            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-main hover:underline transition-all duration-200"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back to Home</span>
