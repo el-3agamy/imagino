@@ -5,6 +5,7 @@ import Sec4 from "@/components/NotLoggedHome/Sec4/Sec4";
 import Sec5 from "@/components/NotLoggedHome/Sec5/Sec5";
 import Sec6 from "@/components/NotLoggedHome/Sec6/Sec6";
 import Sec7 from "@/components/NotLoggedHome/Sec7/Sec7";
+import Sec8 from "@/components/NotLoggedHome/Sec8/Sec8";
 
 export default function NotLoggedHome() {
   return (
@@ -18,6 +19,7 @@ export default function NotLoggedHome() {
       </div>
       <Sec6 />
       <Sec7 />
+      <Sec8 />
     </div>
   );
 }

@@ -72,7 +72,7 @@ export default function Sec7() {
             src={reuseBackgroundExamples}
             alt="settingsMobile"
             className="hidden lg:block"
-          />{" "}
+          />
         </div>
         {/* card */}
         <div className="col-span-6 lg:col-span-2 bg-neutral-50 p-8 lg:p-12 rounded-3xl space-y-8">
