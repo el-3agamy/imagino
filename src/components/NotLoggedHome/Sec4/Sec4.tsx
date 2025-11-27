@@ -1,3 +1,5 @@
+"use client";
+import Image from "next/image";
 import backgroundRemovalExamples from "../../../../public/assets/NotLoggedHome/sec4/background-removal-examples.jpg";
 
 export default function Sec4() {
@@ -16,8 +18,13 @@ export default function Sec4() {
           products—in seconds.
         </div>
       </div>
-      <div>
-        <img src={backgroundRemovalExamples.src} alt="" />
+
+      <div className="w-full">
+        <Image
+          src={backgroundRemovalExamples}
+          alt="Background removal examples"
+          className="w-full h-auto"
+        />
       </div>
     </div>
   );

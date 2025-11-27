@@ -1,3 +1,5 @@
+"use client";
+import Image from "next/image";
 import sec5img from "../../../../public/assets/NotLoggedHome/sec5/sec5.jpeg";
 import Link from "next/link";
 
@@ -19,8 +21,8 @@ export default function Sec5() {
       {/* sec2 */}
       <div className="flex flex-col sm:flex-row w-full lg:px-5">
         <div className="w-full h-full sm:rounded-l-xl overflow-hidden">
-          <img
-            src={sec5img.src}
+          <Image
+            src={sec5img}
             alt="A collage of AI product photos by Pebblely"
             className="w-full h-full"
           />
