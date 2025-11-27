@@ -6,10 +6,10 @@ export default function Sec8() {
   return (
     <div className="flex flex-col justify-center items-center px-5">
       <div>
-        <div className="font-semibold text-4xl lg:text-5xl leading-none mb-4">
+        <div className="font-semibold text-3xl md:text-5xl leading-none mb-4 text-center">
           Generate product photos at scale
         </div>
-        <p className="text-xl">
+        <p className="text-sm md:text-xl text-center">
           As your business grows, you need more content than ever. Use AI to
           help you scale.
         </p>
