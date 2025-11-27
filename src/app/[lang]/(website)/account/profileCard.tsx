@@ -1,4 +1,4 @@
-
+"use client";
 import { useState } from "react";
 import { LogOut, RefreshCw, CreditCard } from "lucide-react";
 
