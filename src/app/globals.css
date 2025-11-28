@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
 /*  */
 @theme inline {
   --color-background: var(--background);
@@ -130,11 +131,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  font-family: "Jost", sans-serif;
+
   }
 }
 
-body {
-  font-family: "Jost", sans-serif;
-}
