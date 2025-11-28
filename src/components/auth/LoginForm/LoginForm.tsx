@@ -1,29 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
-import { Eye, EyeOff, Globe2 } from "lucide-react";
-import { AuthInput } from "../Fields/AuthInput";
 import { useRouteLang } from "@/hooks/useLang";
 
 interface LoginFormValues {
   identifier: string;
-  password: string;
 }
 
 export default function LoginForm() {
   const lang = useRouteLang();
-  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<LoginFormValues>({
     defaultValues: {
       identifier: "",
-      password: "",
     },
   });
 
@@ -31,82 +28,73 @@ export default function LoginForm() {
     console.log("Login submit", values);
   }
 
+  const emailValue = watch("identifier");
+  const isDisabled = isSubmitting || !emailValue;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col gap-4 text-sm"
+    >
       <header className="space-y-1 text-center">
-        <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-          Welcome Back
+        <h1 className="text-2xl font-semibold text-foreground">
+          Log in or sign up
         </h1>
-        <p className="text-xs text-muted-foreground sm:text-sm">
-          Sign in to your account
+        <p className="text-xs text-muted-foreground">
+          Generate 40 images for free every month!
         </p>
       </header>
 
-      <AuthInput
-        label="Phone / Email"
-        placeholder="Enter phone or email"
-        autoComplete="email"
-        required
-        error={errors.identifier?.message}
-        {...register("identifier", {
-          required: "Please enter your email or phone number",
-        })}
-      />
+      <button
+        type="button"
+        className="flex h-12 w-full items-center cursor-pointer justify-center gap-2 rounded-md border border-[#E4E4E7] bg-[#F4F4F5] hover:bg-main sm:text-lg font-medium font-semibold text-foreground hover:bg-[#E9E9EB] transition"
+      >
+        <Image
+          src="/assets/icons/google.svg"
+          alt="Google"
+          width={18}
+          height={18}
+          className="shrink-0"
+        />
+        <span>Continue with Google</span>
+      </button>
+
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <span className="h-px flex-1 bg-[#E4E4E7]" />
+        <span>or</span>
+        <span className="h-px flex-1 bg-[#E4E4E7]" />
+      </div>
 
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="login-password"
-            className="text-xs font-medium text-foreground"
-          >
-            Password
-          </label>
-        </div>
+        <label
+          htmlFor="login-email"
+          className="text-xs font-medium text-foreground"
+        >
+          Email
+        </label>
+        <input
+          id="login-email"
+          type="email"
+          placeholder=""
+          className="h-11 w-full rounded-md border border-[#E4E4E7] bg-white px-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent"
+          autoComplete="email"
+          aria-invalid={!!errors.identifier || undefined}
+          aria-describedby={errors.identifier ? "login-email-error" : undefined}
+          {...register("identifier", {
+            required: "Please enter your email",
+          })}
+        />
 
-        <div className="relative">
-          <input
-            id="login-password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            className="h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#F5F5F7] px-3 pr-10 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent"
-            autoComplete="current-password"
-            aria-invalid={!!errors.password || undefined}
-            aria-describedby={
-              errors.password ? "login-password-error" : undefined
-            }
-            {...register("password", {
-              required: "Password is required",
-              minLength: {
-                value: 8,
-                message: "Password must be at least 8 characters",
-              },
-            })}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute inset-y-0 right-2 flex items-center rounded-full p-1.5 text-muted-foreground hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6]"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <Eye className="h-4 w-4" aria-hidden="true" />
-            )}
-          </button>
-        </div>
-
-        {errors.password && (
+        {errors.identifier && (
           <p
-            id="login-password-error"
+            id="login-email-error"
             className="text-[11px] font-medium text-red-500"
             role="alert"
           >
-            {errors.password.message}
+            {errors.identifier.message}
           </p>
         )}
       </div>
-
       <div className="-mt-2 text-right">
         <Link
           href={`/${lang}/auth/forgot-password`}
@@ -118,40 +106,36 @@ export default function LoginForm() {
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="mt-1 cursor-pointer h-11 w-full rounded-full bg-main text-sm font-semibold text-white shadow-[0_6px_18px_rgba(124,58,237,0.45)] transition hover:bg-main-hover disabled:cursor-not-allowed disabled:opacity-70"
+        disabled={isDisabled}
+        className="mt-1 h-11 w-full cursor-pointer rounded-md bg-main sm:text-lg font-semibold text-white transition shadow-sm hover:bg-main-hover disabled:bg-[#E4E4E7] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-[#E4E4E7]"
       >
-        {isSubmitting ? "Logging in…" : "Login"}
+        {isSubmitting ? "Continuing…" : "Continue"}
       </button>
-
-      <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
-        <span className="h-px flex-1 bg-[#E4E4E7]" />
-        <span className="font-semibold tracking-wide">
-          DON&apos;T HAVE AN ACCOUNT?
-        </span>
-        <span className="h-px flex-1 bg-[#E4E4E7]" />
-      </div>
 
       <Link
         href={`/${lang}/auth/register`}
-        className="h-11 w-full rounded-full border border-[#E4E4E7] bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center"
+        className="h-11 w-full rounded-md border border-[#E4E4E7] bg-white text-center text-sm font-semibold text-foreground hover:bg-[#eee] transition inline-flex items-center justify-center"
       >
         Sign Up
       </Link>
 
-      <div className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-        <Globe2 className="h-4 w-4" aria-hidden="true" />
-        <button
-          type="button"
-          className="flex items-center gap-1 rounded-full px-1.5 py-0.5 hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6]"
-          aria-label="Change language"
+      <p className="mt-2 text-[13px] leading-snug text-center text-muted-foreground">
+        By continuing, you acknowledge that you agree to Pebblely&apos;s{" "}
+        <Link
+          href={`/${lang}/terms-of-service`}
+          className="underline hover:text-foreground"
         >
-          <span>Language:</span>
-          <span className="font-semibold text-foreground">
-            {lang.toUpperCase()}
-          </span>
-        </button>
-      </div>
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link
+          href={`/${lang}/privacy-policy`}
+          className="underline hover:text-foreground"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </form>
   );
 }

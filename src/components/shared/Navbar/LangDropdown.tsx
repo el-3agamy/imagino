@@ -16,9 +16,11 @@ export default function LangDropdown({ mobile = false }: { mobile?: boolean }) {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     const handleScroll = () => setOpen(false);
+
     window.addEventListener("click", handleClickOutside);
     window.addEventListener("scroll", handleScroll);
     return () => {
@@ -47,7 +49,7 @@ export default function LangDropdown({ mobile = false }: { mobile?: boolean }) {
           mobile ? "w-full justify-center" : ""
         }`}
       >
-        <span className="uppercase font-medium">{currentLang}</span>
+        <span className="uppercase font-medium text-sm">{currentLang}</span>
         {!mobile && <ChevronDown className="h-4 w-4" />}
       </button>
 
@@ -55,13 +57,13 @@ export default function LangDropdown({ mobile = false }: { mobile?: boolean }) {
         <div
           className={`absolute ${
             mobile ? "top-full left-0 right-0" : "right-0 mt-2"
-          } bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg py-1 z-50`}
+          } z-50 overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl min-w-[120px]`}
         >
           {languages.map((lng) => (
             <button
               key={lng.code}
               onClick={() => changeLang(lng.code)}
-              className={`block w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
+              className={`w-full px-4 py-2 text-left text-sm whitespace-nowrap hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                 currentLang === lng.code
                   ? "text-yellow-600 dark:text-yellow-400 font-semibold"
                   : "text-neutral-700 dark:text-neutral-300"

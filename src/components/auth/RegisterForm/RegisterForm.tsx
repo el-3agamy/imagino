@@ -139,20 +139,6 @@ export default function RegisterForm() {
       >
         Login
       </Link>
-
-      <div className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-        <Globe2 className="h-4 w-4" aria-hidden="true" />
-        <button
-          type="button"
-          className="flex items-center gap-1 rounded-full px-1.5 py-0.5 hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8b5cf6]"
-          aria-label="Change language"
-        >
-          <span>Language:</span>
-          <span className="font-semibold text-foreground">
-            {lang.toUpperCase()}
-          </span>
-        </button>
-      </div>
     </form>
   );
 }

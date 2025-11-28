@@ -19,6 +19,7 @@ export default function ThemeDropdown({
         setOpen(false);
     };
     const onScroll = () => setOpen(false);
+
     window.addEventListener("click", close);
     window.addEventListener("scroll", onScroll);
     return () => {
@@ -47,16 +48,17 @@ export default function ThemeDropdown({
         <Sun className="h-4 w-4" />
         {!mobile && <ChevronDown className="h-4 w-4" />}
       </button>
+
       {open && (
         <div
           className={`absolute ${
             mobile ? "top-full left-0 right-0" : "right-0 mt-2"
-          } bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-md shadow-lg py-1`}
+          } z-50 overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl min-w-[130px]`}
         >
           {options.map((opt) => (
             <button
               key={opt.value}
-              className="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm whitespace-nowrap hover:bg-neutral-100 dark:hover:bg-neutral-800"
               onClick={() => {
                 setTheme(opt.value);
                 setOpen(false);
