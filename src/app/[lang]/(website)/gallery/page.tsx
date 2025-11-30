@@ -30,8 +30,11 @@ export default function Gallery() {
       <Section className="px-16">
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
           {galleryImages.map((img, index) => (
-            <div key={index} className="mb-4 break-inside-avoid">
-              <Image src={img} width={300} height={300} alt={`gallery_image_${index}`} />
+            <div key={index} className="mb-4 break-inside-avoid relative transition duration-1000">
+          
+               <Image src={img} width={300} height={300} alt={`gallery_image_${index}`} />
+           
+              <div className=" absolute opacity-0 top-0 right-0 left-0 bottom-0  transition duration-500 z-20 bg-amber-300 p-3 hover:opacity-30"></div>
             </div>
           ))}
         </div>
