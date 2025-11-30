@@ -1,11 +1,10 @@
 'use client';
 
-import { X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
 
-function UploadProductModal({ onClose }) {
+function Page() {
+  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const inputRef = useRef(null);
 
@@ -13,18 +12,27 @@ function UploadProductModal({ onClose }) {
     const imageFile = files?.[0];
     if (!imageFile) return;
 
+    setFile(imageFile);
     const url = URL.createObjectURL(imageFile);
     setPreview(url);
   }, []);
 
   const onDrop = useCallback(
-    (acceptedFiles) => {
-      if (acceptedFiles && acceptedFiles.length > 0) {
-        handleFiles(acceptedFiles);
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const files = event.dataTransfer?.files;
+      if (files && files.length > 0) {
+        handleFiles(files);
       }
     },
     [handleFiles]
   );
+
+  const onDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
 
   const onClickUpload = () => {
     inputRef.current?.click();
@@ -37,23 +45,11 @@ function UploadProductModal({ onClose }) {
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'image/*': [] },
-    multiple: false,
-  });
-
   return (
-    <div className="fixed inset-0 z-50 flex min-h-screen flex-col bg-background text-foreground">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-8">
         <h1 className="text-2xl font-semibold sm:text-3xl">Add asset</h1>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-2xl leading-none text-foreground hover:text-muted-foreground cursor-pointer"
-        >
-          <X size={32} />
-        </button>
+        <button className="text-2xl leading-none">×</button>
       </header>
 
       <div className="flex flex-1 flex-col sm:flex-row">
@@ -61,19 +57,17 @@ function UploadProductModal({ onClose }) {
         <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10">
           {!preview ? (
             <div
-              {...getRootProps()}
+              onDrop={onDrop}
+              onDragOver={onDragOver}
               onClick={onClickUpload}
-              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-88 sm:max-w-lg"
+              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-[22rem] sm:max-w-lg"
             >
-              <input {...getInputProps()} className="hidden" />
               <div className="mb-4 text-3xl">🖼️</div>
               <p className="max-w-xs">
                 Upload a photo of your product. We can automatically remove the background from your
                 photo!
               </p>
-              <p className="mt-3 font-medium text-foreground">
-                {isDragActive ? 'Drop your image here' : 'Drop your image here or click'}
-              </p>
+              <p className="mt-3 font-medium text-foreground">Drop your image here or click</p>
               <p className="text-foreground">to select an image</p>
               <p className="mt-4 text-xs text-muted-foreground">
                 All images in free accounts may be deleted after 90 days of inactivity
@@ -131,8 +125,8 @@ function UploadProductModal({ onClose }) {
           </button>
         </aside>
       </div>
-    </div>
+    </main>
   );
 }
 
-export default UploadProductModal;
+export default Page;

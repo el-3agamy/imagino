@@ -1,10 +1,14 @@
 'use client';
 
 import LangDropdown from '@/components/shared/Navbar/LangDropdown';
-import ThemeDropdown from '@/components/shared/Navbar/ThemeDropdown';
 import { useRouteLang } from '@/hooks/useLang';
 import { Bell, Home, LogOut, Menu } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+
+const ThemeDropdown = dynamic(() => import('@/components/shared/Navbar/ThemeDropdown'), {
+  ssr: false,
+});
 
 interface DashboardNavbarProps {
   collapsed: boolean;

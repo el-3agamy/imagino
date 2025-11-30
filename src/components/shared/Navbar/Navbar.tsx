@@ -1,20 +1,23 @@
 'use client';
 
+import { useRouteLang } from '@/hooks/useLang';
 import { Menu, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import LangDropdown from './LangDropdown';
-import ThemeDropdown from './ThemeDropdown';
-import { useRouteLang } from '@/hooks/useLang';
 import Container from '../Container/Container';
+import LangDropdown from './LangDropdown';
 import MobileNav from './MobileNav';
+
+const ThemeDropdown = dynamic(() => import('./ThemeDropdown'), { ssr: false });
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const lang = useRouteLang();
+  const isAuth = false;
 
   if (pathname.includes('/auth') || pathname.includes('/dashboard')) return null;
 
@@ -35,27 +38,43 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-              <Link href={`/${lang}/resources`} className="hover:opacity-80 transition">
-                Resources
-              </Link>
-              <Link href={`/${lang}/api`} className="hover:opacity-80 transition">
-                API
-              </Link>
-              <Link href={`/${lang}/pricing`} className="hover:opacity-80 transition">
-                Pricing
-              </Link>
-              <Link href={`/${lang}/auth/login`} className="hover:opacity-80 transition">
-                Log in
-              </Link>
-              <Link
-                href={`/${lang}/get-started`}
-                className="bg-yellow-400 text-black px-4 py-1.5 rounded-md font-semibold hover:bg-yellow-300 transition"
-              >
-                Get started
-              </Link>
-
               <LangDropdown />
               <ThemeDropdown />
+              <Link href={`/${lang}/home`} className="hover:opacity-80 transition">
+                Home
+              </Link>
+              <Link href={`/${lang}/blogs`} className="hover:opacity-80 transition">
+                Blogs
+              </Link>
+              <Link href={`/${lang}/gallery`} className="hover:opacity-80 transition">
+                Gallery
+              </Link>
+              <Link href={`/${lang}/faq`} className="hover:opacity-80 transition">
+                FAQ
+              </Link>
+              {isAuth ? (
+                <Link href={`/${lang}/upgrade`} className="hover:opacity-80 transition">
+                  Upgrade
+                </Link>
+              ) : (
+                <Link href={`/${lang}/pricing`} className="hover:opacity-80 transition">
+                  Pricing
+                </Link>
+              )}
+              {!isAuth && (
+                <>
+                  <Link href={`/${lang}/auth/login`} className="hover:opacity-80 transition">
+                    Log in
+                  </Link>
+
+                  <Link
+                    href={`/${lang}/auth/register`}
+                    className="bg-yellow-400 text-black px-4 py-1.5 rounded-md font-semibold hover:bg-yellow-300 transition"
+                  >
+                    Get started
+                  </Link>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-2 md:hidden">
@@ -83,7 +102,12 @@ export default function Navbar() {
         onClick={() => setIsMobileOpen(false)}
       />
 
-      <MobileNav lang={lang} setIsMobileOpen={setIsMobileOpen} isMobileOpen={isMobileOpen} />
+      <MobileNav
+        isAuth={isAuth}
+        lang={lang}
+        setIsMobileOpen={setIsMobileOpen}
+        isMobileOpen={isMobileOpen}
+      />
     </>
   );
 }

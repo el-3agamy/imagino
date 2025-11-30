@@ -1,13 +1,15 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import Container from "../Container/Container";
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import Container from '../Container/Container';
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname.includes("/auth")) return null;
+  const isAuth: boolean = false;
+
+  if (pathname.includes('/auth') || isAuth) return null;
 
   const year = new Date().getFullYear();
 
@@ -28,27 +30,24 @@ export default function Footer() {
             </p>
           </div>
 
-          <FooterColumn title="Products" items={["Pebblely", "Pebblely API"]} />
+          <FooterColumn title="Products" items={['Pebblely', 'Pebblely API']} />
           <FooterColumn
             title="Company"
-            items={["TikTok", "Instagram", "Twitter", "小红书", "Contact"]}
+            items={['TikTok', 'Instagram', 'Twitter', '小红书', 'Contact']}
           />
-          <FooterColumn
-            title="Resources"
-            items={["FAQ", "Blog", "Gallery", "Privacy", "Terms"]}
-          />
+          <FooterColumn title="Resources" items={['FAQ', 'Blog', 'Gallery', 'Privacy', 'Terms']} />
           <FooterColumn
             title="Product Categories"
             items={[
-              "Skincare & beauty",
-              "Beverage",
-              "Candle",
-              "Soap",
-              "Furniture",
-              "Jewelry",
-              "Necklace",
-              "Pet products",
-              "Watches",
+              'Skincare & beauty',
+              'Beverage',
+              'Candle',
+              'Soap',
+              'Furniture',
+              'Jewelry',
+              'Necklace',
+              'Pet products',
+              'Watches',
             ]}
           />
         </div>
@@ -60,16 +59,11 @@ export default function Footer() {
 function FooterColumn({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <h3 className="font-semibold mb-3 text-neutral-800 dark:text-neutral-200">
-        {title}
-      </h3>
+      <h3 className="font-semibold mb-3 text-neutral-800 dark:text-neutral-200">{title}</h3>
       <ul className="space-y-2 text-neutral-600 dark:text-neutral-400">
         {items.map((item) => (
           <li key={item}>
-            <Link
-              href="#"
-              className="hover:underline hover:text-neutral-800 dark:hover:text-white"
-            >
+            <Link href="#" className="hover:underline hover:text-neutral-800 dark:hover:text-white">
               {item}
             </Link>
           </li>

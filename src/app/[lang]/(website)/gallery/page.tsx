@@ -1,23 +1,21 @@
-"use client";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Section from "@/components/shared/Section/Section";
-import GalleryTempLayer from "@/components/GalleryTempLayer/GalleryTempLayer";
-import Popup from "@/components/Popup/Popup";
+'use client';
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Section from '@/components/shared/Section/Section';
+import GalleryTempLayer from '@/components/gallery/GalleryTempLayer/GalleryTempLayer';
+import Popup from '@/components/gallery/Popup/Popup';
 
 export default function Gallery() {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  
-  
+
   useEffect(() => {
-      // I PUT function inside ussEffect because Next Throw error if i put it outside (Saeid)
     async function getGalleryImages() {
-      const res = await fetch("/api/gallery");
+      const res = await fetch('/api/gallery');
       const data = await res.json();
       setGalleryImages(data);
     }
-    getGalleryImages() ;
+    getGalleryImages();
   }, []);
 
   return (
@@ -34,9 +32,10 @@ export default function Gallery() {
       <Section className="px-16">
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
           {galleryImages.map((img, index) => (
-            <div key={index} className="mb-4 break-inside-avoid relative"
+            <div
+              key={index}
+              className="mb-4 break-inside-avoid relative"
               onClick={() => setSelectedImage(img)}
-
             >
               {/* IMAGE */}
               <Image
@@ -48,20 +47,18 @@ export default function Gallery() {
               />
 
               {/* HOVER TEMP LAYER */}
-              <GalleryTempLayer >
+              <GalleryTempLayer>
                 <p className="text-white">
-                  dolore culpa, recusandae reprehenderit aperiam perferendis optio atque
-                  fugit quam quis et voluptatum. Aperiam?</p>
+                  dolore culpa, recusandae reprehenderit aperiam perferendis optio atque fugit quam
+                  quis et voluptatum. Aperiam?
+                </p>
               </GalleryTempLayer>
-
             </div>
           ))}
         </div>
       </Section>
 
-      {/* popup details */}
-      {selectedImage && (<Popup selectedImage={selectedImage} setSelectedImage={setSelectedImage} /> )}
-
+      {selectedImage && <Popup selectedImage={selectedImage} setSelectedImage={setSelectedImage} />}
     </>
   );
 }

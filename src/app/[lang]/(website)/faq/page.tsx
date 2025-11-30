@@ -1,10 +1,18 @@
-"use client";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
+import Container from '@/components/shared/Container/Container';
+import Section from '@/components/shared/Section/Section';
+import faqData from './_data/faq';
+import { Metadata } from 'next';
 
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
-import Container from "@/components/shared/Container/Container";
-import Section from "@/components/shared/Section/Section";
-import faqData from "./_data/faq";
-
+export const metadata: Metadata = {
+  title: 'IMAGINO - FAQ',
+  description: 'Explore most Asked Questions and answers !',
+};
 
 export default function FAQPage() {
   return (
@@ -17,7 +25,11 @@ export default function FAQPage() {
         <div className="max-w-3xl mx-auto">
           <Accordion type="single" collapsible className="space-y-4">
             {faqData?.map((item, index) => (
-              <AccordionItem value={`item-${index}`} key={index} className="border rounded-lg shadow-sm hover:shadow-md transition">
+              <AccordionItem
+                value={`item-${index}`}
+                key={index}
+                className="border rounded-lg shadow-sm hover:shadow-md transition"
+              >
                 <AccordionTrigger className="px-6 py-4 text-lg font-medium text-gray-900">
                   {item.question}
                 </AccordionTrigger>
