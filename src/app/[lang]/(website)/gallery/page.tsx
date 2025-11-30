@@ -1,44 +1,67 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import Section from "@/components/shared/Section/Section";
 import Image from "next/image";
+import Section from "@/components/shared/Section/Section";
+import GalleryTempLayer from "@/components/GalleryTempLayer/GalleryTempLayer";
+import Popup from "@/components/Popup/Popup";
 
 export default function Gallery() {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
-
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  
   useEffect(() => {
+      // I PUT function inside ussEffect because Next Throw error if i put it outside (Saeid)
     async function getGalleryImages() {
       const res = await fetch("/api/gallery");
       const data = await res.json();
       setGalleryImages(data);
     }
-    getGalleryImages();
+    getGalleryImages() ;
   }, []);
 
   return (
     <>
+      {/* header */}
       <header className="p-16 text-center">
         <h6 className="mt-2 text-4xl font-bold">Find your next winning shot</h6>
         <p className="py-2 text-[20px]">
-          Generating product images using AI can be tricky. But it becomes a lot simpler
-          using proven descriptions and reference images tested by businesses around the world.
-          Click on your favorite image below, and use the template for your product in Pebblely
+          Click on any image below to preview details like Pebblely.
         </p>
       </header>
 
+      {/* GALLERY GRID */}
       <Section className="px-16">
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
           {galleryImages.map((img, index) => (
-            <div key={index} className="mb-4 break-inside-avoid relative transition duration-1000">
-          
-               <Image src={img} width={300} height={300} alt={`gallery_image_${index}`} />
-           
-              <div className=" absolute opacity-0 top-0 right-0 left-0 bottom-0  transition duration-500 z-20 bg-amber-300 p-3 hover:opacity-30"></div>
+            <div key={index} className="mb-4 break-inside-avoid relative"
+              onClick={() => setSelectedImage(img)}
+
+            >
+              {/* IMAGE */}
+              <Image
+                src={img}
+                width={300}
+                height={300}
+                alt={`gallery_image_${index}`}
+                className="transition duration-200"
+              />
+
+              {/* HOVER TEMP LAYER */}
+              <GalleryTempLayer >
+                <p className="text-white">
+                  dolore culpa, recusandae reprehenderit aperiam perferendis optio atque
+                  fugit quam quis et voluptatum. Aperiam?</p>
+              </GalleryTempLayer>
+
             </div>
           ))}
         </div>
       </Section>
+
+      {/* popup details */}
+      {selectedImage && (<Popup selectedImage={selectedImage} setSelectedImage={setSelectedImage} /> )}
+
     </>
   );
 }
