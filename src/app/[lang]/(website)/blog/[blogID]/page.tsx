@@ -1,24 +1,16 @@
-"use client";
+'use client';
 
-import { useParams } from "next/navigation";
-import Container from "@/components/shared/Container/Container";
-import Section from "@/components/shared/Section/Section";
-import Image from "next/image";
-import { blogs } from "../_data/blogs";
+import { useParams } from 'next/navigation';
+import Container from '@/components/shared/Container/Container';
+import Section from '@/components/shared/Section/Section';
+import Image from 'next/image';
+import { blogs } from '../_data/blogs';
 
 export default function SpecificBlog() {
-
-
-
-// لو blogID array (من dynamic routes اللي فيها [lang])
-
-
-const { blogID } = useParams();
-const blogIDString = Array.isArray(blogID) ? blogID[0] : blogID;
-const index = blogIDString ? parseInt(blogIDString, 10) : -1;
-const blog = blogs[index];
-
-
+  const { blogID } = useParams();
+  const blogIDString = Array.isArray(blogID) ? blogID[0] : blogID;
+  const index = blogIDString ? parseInt(blogIDString, 10) : -1;
+  const blog = blogs[index];
 
   return (
     <Container>

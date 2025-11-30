@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { Menu, X } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import LangDropdown from "./LangDropdown";
-import ThemeDropdown from "./ThemeDropdown";
-import { useRouteLang } from "@/hooks/useLang";
-import Container from "../Container/Container";
-import MobileNav from "./MobileNav";
+import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import LangDropdown from './LangDropdown';
+import ThemeDropdown from './ThemeDropdown';
+import { useRouteLang } from '@/hooks/useLang';
+import Container from '../Container/Container';
+import MobileNav from './MobileNav';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const lang = useRouteLang();
 
-  if (pathname.includes("/auth")) return null;
+  if (pathname.includes('/auth') || pathname.includes('/dashboard')) return null;
 
   return (
     <>
@@ -31,34 +31,20 @@ export default function Navbar() {
                 alt="Pebblely Logo"
                 className="h-6 w-auto"
               />
-              <span className="font-semibold text-lg tracking-tight dark:text-white">
-                Pebblely
-              </span>
+              <span className="font-semibold text-lg tracking-tight dark:text-white">Pebblely</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-              <Link
-                href={`/${lang}/resources`}
-                className="hover:opacity-80 transition"
-              >
+              <Link href={`/${lang}/resources`} className="hover:opacity-80 transition">
                 Resources
               </Link>
-              <Link
-                href={`/${lang}/api`}
-                className="hover:opacity-80 transition"
-              >
+              <Link href={`/${lang}/api`} className="hover:opacity-80 transition">
                 API
               </Link>
-              <Link
-                href={`/${lang}/pricing`}
-                className="hover:opacity-80 transition"
-              >
+              <Link href={`/${lang}/pricing`} className="hover:opacity-80 transition">
                 Pricing
               </Link>
-              <Link
-                href={`/${lang}/auth/login`}
-                className="hover:opacity-80 transition"
-              >
+              <Link href={`/${lang}/auth/login`} className="hover:opacity-80 transition">
                 Log in
               </Link>
               <Link
@@ -83,11 +69,7 @@ export default function Navbar() {
                 className="p-2"
                 onClick={() => setIsMobileOpen((prev) => !prev)}
               >
-                {isMobileOpen ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
+                {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </nav>
@@ -96,18 +78,12 @@ export default function Navbar() {
 
       <div
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200 md:hidden ${
-          isMobileOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+          isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileOpen(false)}
       />
 
-      <MobileNav
-        lang={lang}
-        setIsMobileOpen={setIsMobileOpen}
-        isMobileOpen={isMobileOpen}
-      />
+      <MobileNav lang={lang} setIsMobileOpen={setIsMobileOpen} isMobileOpen={isMobileOpen} />
     </>
   );
 }
