@@ -7,11 +7,18 @@ import Image from "next/image";
 import { blogs } from "../_data/blogs";
 
 export default function SpecificBlog() {
-  const { blogID } = useParams();
 
-  const blog = blogID ? blogs[blogID] : undefined;
 
-  if (!blog) return <div>Blog not found</div>;
+
+// لو blogID array (من dynamic routes اللي فيها [lang])
+
+
+const { blogID } = useParams();
+const blogIDString = Array.isArray(blogID) ? blogID[0] : blogID;
+const index = blogIDString ? parseInt(blogIDString, 10) : -1;
+const blog = blogs[index];
+
+
 
   return (
     <Container>
