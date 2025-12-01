@@ -70,16 +70,16 @@ export default function Blog() {
         </section>
 
         {/* Cards Section */}
-        <section className="px-16 mx-auto">
-          <div className="flex flex-wrap gap-6 content-center mx-auto">
+        <section className="px-16 ">
+          <div className="flex flex-wrap gap-6 content-center ">
             {blogs?.map((blog, i) => (
               <Link
                 href={`blogs/${i}`}
-                className="w-full sm:w-[48%] lg:w-[31%] max-w-md pt-0 shadow-md hover:shadow-xl hover:cursor-pointer transition-all"
+                className="rounded-2xl w-full sm:w-[48%] lg:w-[31%] max-w-md pt-0 shadow-md hover:shadow-xl hover:cursor-pointer transition-all"
                 key={i}
               >
-                <div>
-                  <Card>
+                <div className='h-full '>
+                  <Card className='h-full '>
                     <div className="relative w-full h-49 overflow-hidden  -mt-6">
                       <Image
                         src={blog.imgPath}
@@ -105,8 +105,8 @@ export default function Blog() {
       </div>
 
       {/* Product Ideas Section */}
-      <div>
-        <ProductsIdeas />
+      <div >
+        <ProductsIdeas  />
       </div>
 
       {/* Masonry Gallery Section */}

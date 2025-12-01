@@ -83,5 +83,9 @@ export const blogs : IBlogShape[] = [
     title :"Giving You More Control Over Generated Images" ,
     imgPath : "/blogImages/chair-in-orange-living-room.jpg"
  }
-
+,
+ {
+    title : "How to Generate Professional Beverage Product Photos with AI." ,
+    imgPath : "/blogImages/cover-ai-bottle-photos.jpg"
+ } 
 ]
