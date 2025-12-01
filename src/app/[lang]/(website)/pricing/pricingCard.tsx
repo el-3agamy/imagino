@@ -1,3 +1,4 @@
+import Link from "next/link";
 
 export default function PricingCard({
   title,
@@ -44,9 +45,11 @@ export default function PricingCard({
       </div>
 
       <div className="mt-10">
-        <button
+        <Link href={`checkout`}>
+          <button
+          
           className={`
-            w-full py-3 rounded-lg font-medium 
+            w-full py-3 rounded-lg font-medium  cursor-pointer
             ${
               highlight
                 ? "bg-black text-white hover:bg-gray-900"
@@ -54,8 +57,9 @@ export default function PricingCard({
             }
           `}
         >
-          Get started for free
+          Subscribe Now.
         </button>
+        </Link>
       </div>
     </div>
   );
