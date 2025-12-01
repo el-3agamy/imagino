@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -49,30 +50,27 @@ export default function HomePage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-6">
-                {[
-                  '/public/assets/Home/product1.jpg',
-                  '/public/assets/Home/product2.jpg',
-                  '/public/assets/Home/product3.jpg',
-                ].map((src, index) => (
-                  <div
-                    key={index}
-                    className="group relative aspect-4/5 overflow-hidden rounded-[10px] bg-muted"
-                  >
-                    <Image
-                      src={src.replace('/public', '')}
-                      alt="Inspiration image"
-                      fill
-                      className="object-cover transition duration-200 group-hover:brightness-75"
-                    />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6">
+                {['/public/assets/Home/product1.jpg','/public/assets/Home/product2.jpg','/public/assets/Home/product3.jpg']
+                  .map((src, index) => (
+                    <div
+                      key={index}
+                      className="group relative aspect-4/5 overflow-hidden rounded-[10px] bg-muted col-span-1"
+                    >
+                      <Image
+                        src={src.replace('/public', '')}
+                        alt="Inspiration image"
+                        fill
+                        className="object-cover transition duration-200 group-hover:brightness-75"
+                      />
 
-                    <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:p-4">
-                      <button className="pointer-events-auto rounded-[10px] bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm">
-                        Generate
-                      </button>
+                      <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:p-4">
+                        <button className="pointer-events-auto rounded-[10px] bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm">
+                          Generate
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </section>
 
@@ -94,40 +92,37 @@ export default function HomePage() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-6">
-                {[
-                  '/public/assets/Home/product1.jpg',
-                  '/public/assets/Home/product2.jpg',
-                  '/public/assets/Home/product3.jpg',
-                ].map((src, index) => (
-                  <div
-                    key={index}
-                    className="group relative aspect-4/5 overflow-hidden rounded-[10px] bg-muted"
-                  >
-                    <Image
-                      src={src.replace('/public', '')}
-                      alt="Asset image"
-                      fill
-                      className="object-cover transition duration-200 group-hover:brightness-75"
-                    />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6">
+                {['/public/assets/Home/product1.jpg','/public/assets/Home/product2.jpg','/public/assets/Home/product3.jpg']
+                  .map((src, index) => (
+                    <div
+                      key={index}
+                      className="group relative aspect-4/5 overflow-hidden rounded-[10px] bg-muted col-span-1"
+                    >
+                      <Image
+                        src={src.replace('/public', '')}
+                        alt="Asset image"
+                        fill
+                        className="object-cover transition duration-200 group-hover:brightness-75"
+                      />
 
-                    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:p-4">
-                      <div className="flex items-start justify-between text-sm sm:text-base text-white">
-                        <span>Your product</span>
-                        <div className="flex gap-1">
-                          <button className="pointer-events-auto rounded bg-white text-black px-2 py-1 text-xl w-8 h-8 flex items-center justify-center hover:bg-gray-200 cursor-pointer">
-                            <ArrowDown size={16} />
+                      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:p-4">
+                        <div className="flex items-start justify-between text-sm sm:text-base text-white">
+                          <span>Your product</span>
+                          <div className="flex gap-1">
+                            <button className="pointer-events-auto rounded bg-white text-black px-2 py-1 text-xl w-8 h-8 flex items-center justify-center hover:bg-gray-200 cursor-pointer">
+                              <ArrowDown size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <button className="pointer-events-auto rounded-[10px] bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm">
+                            Generate
                           </button>
                         </div>
                       </div>
-                      <div className="flex justify-end">
-                        <button className="pointer-events-auto rounded-[10px] bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm">
-                          Generate
-                        </button>
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </section>
 
