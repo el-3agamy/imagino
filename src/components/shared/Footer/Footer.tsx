@@ -35,7 +35,7 @@ export default function Footer() {
             title="Company"
             items={['TikTok', 'Instagram', 'Twitter', '小红书', 'Contact']}
           />
-          <FooterColumn title="Resources" items={['FAQ', 'Blog', 'Gallery', 'Privacy', 'Terms']} />
+          <FooterColumn title="Resources" items={['FAQ', 'Blogs', 'Gallery', 'Privacy', 'Terms']} />
           <FooterColumn
             title="Product Categories"
             items={[
