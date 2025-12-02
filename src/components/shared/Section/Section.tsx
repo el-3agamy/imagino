@@ -1,19 +1,23 @@
-import React from "react";
+import clsx from 'clsx';
 
 export default function Section({
   children,
   className,
   bg,
-  // (Saeid) i add style property so we can insert images as  background easily . 
   style,
 }: {
   children: React.ReactNode;
   className?: string;
   bg?: boolean;
-  style? : object
+  style?: React.CSSProperties;
 }) {
   return (
-    <section className={`py-32 ${className} ${bg ? " bg-section" : ""}`}
+    <section
+      className={clsx(
+        'py-12 sm:py-16 lg:py-20',
+        bg ? 'bg-section dark:bg-section-dark' : '',
+        className
+      )}
       style={style}
     >
       {children}

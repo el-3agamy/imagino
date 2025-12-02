@@ -1,27 +1,41 @@
-import Link from "next/link";
+import Container from '@/components/shared/Container/Container';
+import Section from '@/components/shared/Section/Section';
+import Link from 'next/link';
 
 export default function Sec1() {
   return (
-    <div className="flex flex-col justify-center items-center gap-3 pt-20 pb-10 text-center px-5 md:px-20 lg:px-48">
-      <div className="flex justify-center gap-3 px-3 py-1 w-fit border rounded-full border-gray-300 hover:bg-gray-100 hover:cursor-pointer transition duration-300 ease-in-out">
-        <div className="px-3 rounded-full bg-gray-200">Latest</div>
-        Add logo or badge in blunk
-      </div>
-      <div className="text-xl md:text-3xl lg:text-6xl font-bold">
-        Create AI product photos
-        <br /> that help you sell more. <br />
-        No Photoshop skills required.
-      </div>
-      <div className="text-lg">
-        Remove backgrounds, generate beautiful photos, and edit with AI—all in
-        one tool.
-      </div>
-      <Link
-        href={``}
-        className="bg-yellow-400 text-black px-4 py-1.5 rounded-md font-semibold hover:bg-yellow-300 transition"
-      >
-        Get 40 free photos every month
-      </Link>
-    </div>
+    <Section className="pt-20 pb-10">
+      <Container className="text-center">
+        <div className="flex justify-center items-center gap-3 mb-6">
+          <div className="tag" aria-hidden>
+            <span className="rounded-full px-3 py-1 bg-[color:var(--main-color)]/10 text-[color:var(--main-color)]">
+              Latest
+            </span>
+            <span className="text-sm">Add logo or badge in bulk</span>
+          </div>
+        </div>
+
+        <h1 className="hero-title text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4">
+          Create AI product photos
+          <br />
+          that help you sell more.
+          <br />
+          No Photoshop skills required.
+        </h1>
+
+        <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-6">
+          Remove backgrounds, generate beautiful photos, and edit with AI — all in one tool.
+        </p>
+
+        <div className="flex justify-center gap-4 flex-col sm:flex-row items-center">
+          <Link href={''} className="btn btn-primary">
+            Get 40 free photos every month
+          </Link>
+          <Link href={''} className="btn btn-secondary">
+            Learn how it works
+          </Link>
+        </div>
+      </Container>
+    </Section>
   );
 }

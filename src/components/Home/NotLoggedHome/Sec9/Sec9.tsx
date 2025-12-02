@@ -1,8 +1,9 @@
+import Container from '@/components/shared/Container/Container';
+import Section from '@/components/shared/Section/Section';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -11,72 +12,79 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Sec9() {
+  const items = Array.from({ length: 18 }).map((_, i) => i);
   return (
-    <div className="bg-[#fafafa]">
-      <div className="font-semibold text-4xl lg:text-5xl leading-none mb-4 text-center">
-        100+ templates to get started with
-      </div>
-      <div className="grid grid-cols-6 gap-3">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8].map((item, index) => (
-          <Dialog key={index}>
-            <DialogTrigger className="col-span-2 lg:col-span-1 relative group hover:cursor-zoom-in rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-5 bg-black/50 text-white flex items-center justify-center">
-                Emerging from rippling water, pink background, shallow depth of field
-              </div>
-              <Image
-                width={500}
-                height={500}
-                src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
-                alt="img"
-              />
-            </DialogTrigger>
-            <DialogContent className="w-[90vw] max-w-[90vw] p-0 max-h-[90vh] overflow-y-auto sm:max-w-[90vw] sm:w-[90vw]">
-              <DialogHeader>
-                <DialogTitle></DialogTitle>
-                <DialogDescription></DialogDescription>
-                <div className="p-10 grid grid-cols-3 gap-5">
-                  <div className="col-span-3 md:col-span-2">
-                    <Image
-                      width={500}
-                      height={500}
-                      src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
-                      alt="img"
-                    />
-                  </div>
-                  <div className="col-span-3 md:col-span-1 flex flex-col gap-3 text-left">
-                    <div className="text-lg font-semibold">
-                      Emerging from rippling water, pink background, shallow depth of field
-                    </div>
-                    <div className="text-sm">Excluded from image</div>
-                    <Badge variant="secondary">ugly</Badge>
-                    <div className="text-sm">Reference image</div>
-                    <Image
-                      src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
-                      alt="img"
-                      width={50}
-                      height={50}
-                    />
-                    <div>
-                      <div className="text-sm">Dimensions</div>
-                      <div className="text-sm">1024 ✕ 1024</div>
-                    </div>
-                    <div>
-                      <div className="text-sm">Generation mode</div>
-                      <div className="text-sm">GENERATE</div>
-                    </div>
-                    <Link
-                      href={``}
-                      className="bg-yellow-400 text-black px-4 py-1.5 rounded-md text-center font-semibold hover:bg-yellow-300 transition"
-                    >
-                      Use this template
-                    </Link>
-                  </div>
+    <Section className="py-16">
+      <Container>
+        <h3 className="text-4xl font-semibold text-center mb-6">
+          100+ templates to get started with
+        </h3>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {items.map((item, idx) => (
+            <Dialog key={idx}>
+              <DialogTrigger className="template-thumb">
+                <Image
+                  src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
+                  alt="template"
+                  width={400}
+                  height={400}
+                  className="w-full h-40 object-cover rounded-lg"
+                />
+                <div className="overlay">
+                  <div className="text-sm">Emerging from rippling water, pink background</div>
                 </div>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        ))}
-      </div>
-    </div>
+              </DialogTrigger>
+
+              <DialogContent className="w-[90vw] max-w-[90vw] p-0 max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="sr-only">Template detail</DialogTitle>
+                  <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2">
+                      <Image
+                        src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
+                        alt="preview"
+                        width={900}
+                        height={600}
+                        className="rounded-lg"
+                      />
+                    </div>
+                    <div className="md:col-span-1 space-y-3">
+                      <div className="text-lg font-semibold">
+                        Emerging from rippling water, pink background
+                      </div>
+                      <div className="text-sm text-muted-foreground">Excluded from image</div>
+                      <Badge variant="secondary">example</Badge>
+
+                      <div className="text-sm mt-2">Reference image</div>
+                      <Image
+                        src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
+                        alt="ref"
+                        width={64}
+                        height={64}
+                      />
+
+                      <div className="mt-4">
+                        <div className="text-sm">Dimensions</div>
+                        <div className="text-sm font-medium">1024 ✕ 1024</div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm">Generation mode</div>
+                        <div className="text-sm font-medium">GENERATE</div>
+                      </div>
+
+                      <Link href={''} className="btn btn-primary mt-3 w-full text-center">
+                        Use this template
+                      </Link>
+                    </div>
+                  </div>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          ))}
+        </div>
+      </Container>
+    </Section>
   );
 }

@@ -1,91 +1,40 @@
-import Image from 'next/image';
+import Image from "next/image";
+import Section from "@/components/shared/Section/Section";
+import Container from "@/components/shared/Container/Container";
 
 export default function Sec7() {
   return (
-    <div className="flex flex-col justify-center items-center gap-5 text-left md:text-center py-40 px-5 md:px-5 bg-[#fde047]">
-      <div className="text-3xl md:text-5xl font-bold text-center">
-        Edit generated images with AI
-      </div>
-      <div className="text-center">
-        Pebblely is more than an AI image generator. It is an AI design tool.
-      </div>
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-6 gap-6 text-left">
-        {/* card */}
-        <div className="p-8 col-span-6 lg:col-span-3 bg-neutral-50 flex flex-col rounded-3xl space-y-8">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Remove objects in images</div>
-            <div className="text-lg leading-tight">
-              You can remove objects or change parts of the image by brushing over them and
-              re-generating. This lets you fine-tune your images, without generating from scratch
-              again.
-            </div>
+    <Section className="py-16">
+      <Container>
+        <h3 className="text-3xl md:text-5xl font-bold text-center mb-4">Edit generated images with AI</h3>
+        <p className="text-center mb-10">Pebblely is more than an AI image generator. It is an AI design tool.</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+          <div className="col-span-6 lg:col-span-3 feature-card">
+            <h4 className="text-2xl font-medium">Remove objects in images</h4>
+            <p className="mt-2">Remove objects by brushing and re-generating — fine-tune without starting over.</p>
+            <Image src={"/assets/NotLoggedHome/sec7/remove-object.gif"} width={900} height={500} alt="remove object" className="mt-4 rounded-lg" />
           </div>
-          <Image
-            width={500}
-            height={500}
-            src={'/assets/NotLoggedHome/sec7/remove-object.gif'}
-            alt="settingsMobile"
-            className="w-full rounded-3xl"
-          />
-        </div>
-        {/* card */}
-        <div className="p-8 col-span-6 lg:col-span-3 bg-neutral-50 flex flex-col rounded-3xl space-y-8">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Move your product</div>
-            <div className="text-lg leading-tight">
-              You can re-position, resize, and rotate your product in generated images. Every
-              generated image has two layers: the product and the background.
-            </div>
+
+          <div className="col-span-6 lg:col-span-3 feature-card">
+            <h4 className="text-2xl font-medium">Move your product</h4>
+            <p className="mt-2">Re-position, resize, and rotate the product—images separate product & background layers for control.</p>
+            <Image src={"/assets/NotLoggedHome/sec7/move-product.gif"} width={900} height={500} alt="move product" className="mt-4 rounded-lg" />
           </div>
-          <Image
-            width={500}
-            height={500}
-            src={'/assets/NotLoggedHome/sec7/move-product.gif'}
-            alt="settingsMobile"
-            className="w-full rounded-3xl"
-          />
-        </div>
-        {/* card */}
-        <div className="col-span-6 lg:col-span-4 bg-neutral-50 flex flex-col items-center p-8 lg:p-12 rounded-3xl space-y-8">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Reuse backgrounds</div>
-            <div className="text-lg leading-tight">
-              Love a background you generated? You can reuse it for different products by replacing
-              the product.
-            </div>
+
+          <div className="col-span-6 lg:col-span-4 feature-card">
+            <h4 className="text-2xl font-medium">Reuse backgrounds</h4>
+            <p className="mt-2">Reuse a generated background with other products by swapping the product layer.</p>
+            <Image src={"/assets/NotLoggedHome/sec7/reuse-background-examples.jpg"} width={900} height={500} alt="reuse backgrounds" className="mt-4 rounded-lg" />
           </div>
-          <Image
-            width={500}
-            height={500}
-            src={'/assets/NotLoggedHome/sec7/reuse-background-examples-mobile.jpg'}
-            alt="settingsMobile"
-            className="lg:hidden pl-10"
-          />
-          <Image
-            width={500}
-            height={500}
-            src={'/assets/NotLoggedHome/sec7/reuse-background-examples.jpg'}
-            alt="settingsMobile"
-            className="hidden lg:block"
-          />
-        </div>
-        {/* card */}
-        <div className="col-span-6 lg:col-span-2 bg-neutral-50 p-8 lg:p-12 rounded-3xl space-y-8">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Add logo or badge in bulk</div>
-            <div className="text-lg leading-tight">
-              Decorate your photos with your logo or a badge to help convert more shoppers.
-            </div>
+
+          <div className="col-span-6 lg:col-span-2 feature-card">
+            <h4 className="text-2xl font-medium">Add logo or badge in bulk</h4>
+            <p className="mt-2">Decorate photos with brand logos or badges at scale.</p>
+            <Image src={"/assets/NotLoggedHome/sec7/add-logo-examples.jpg"} width={600} height={400} alt="add logos" className="mt-4 rounded-lg" />
           </div>
-          <Image
-            width={500}
-            height={500}
-            src={'/assets/NotLoggedHome/sec7/add-logo-examples.jpg'}
-            alt="settingsMobile"
-            className="w-full"
-          />
         </div>
-      </div>
-    </div>
+      </Container>
+    </Section>
   );
 }

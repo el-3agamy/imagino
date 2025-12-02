@@ -1,55 +1,54 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import Section from '@/components/shared/Section/Section';
+import Container from '@/components/shared/Container/Container';
 
 export default function Sec10() {
   return (
-    <div className="flex flex-col gap-5 pt-20 bg-[#fde047]">
-      <div className="text-center font-semibold px-5 text-4xl lg:text-5xl mb-5 leading-none">
-        Join 1,000,000+ creatives who are creating with AI
-      </div>
-      <div className="flex flex-wrap justify-center items-center gap-5 px-5">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((item, index) => (
-          <Link
-            key={index}
-            href={``}
-            className="flex flex-col gap-10 p-10 rounded-xl hover:shadow-xl w-full sm:w-80 bg-white"
-          >
-            <div>
-              Pebblely has been a game-changer for my jewelry startup. It allows me to create
-              stunning model shots without the cost of hiring professionals. I can create images
-              with the right look and feel for my brand and then showcase my work beautifully on my
-              website and social media.
-            </div>
-            <hr />
-            <div className="flex justify-start items-center gap-5">
-              <Avatar>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>CN</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-semibold text-sm">Name</div>
-                <div className="text-sm text-gray-500">Job</div>
+    <Section className="py-16 bg-section dark:bg-section-dark">
+      <Container>
+        <h3 className="text-4xl font-semibold text-center mb-6">
+          Join 1,000,000+ creatives who are creating with AI
+        </h3>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Link
+              key={i}
+              href={''}
+              className="block bg-[color:var(--card)] p-6 rounded-xl hover:shadow-xl"
+            >
+              <p className="mb-4">
+                Pebblely has been a game-changer for my jewelry startup. It allows me to create
+                stunning model shots without hiring professionals.
+              </p>
+              <hr className="sep my-4" />
+              <div className="flex items-center gap-4">
+                <Avatar>
+                  <AvatarImage src="https://github.com/shadcn.png" />
+                  <AvatarFallback>CN</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold">Name</div>
+                  <div className="text-sm text-muted-foreground">Job</div>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-      <div
-        className="text-center py-40 mt-40 px-4 md:py-72 bg-cover bg-center"
-        style={{
-          backgroundImage: "url('https://pebblely.b-cdn.net/samples/auth_bg.jpg')",
-        }}
-      >
-        <div className="text-white text-3xl sm:text-4xl lg:text-6xl font-bold pb-8 drop-shadow-xl">
-          Grow your business with AI
+            </Link>
+          ))}
         </div>
-        <Link
-          href={``}
-          className="bg-yellow-300 text-black px-4 py-4 rounded-md text-center font-semibold hover:bg-yellow-400 transition"
+
+        <div
+          className="mt-16 rounded-xl bg-cover bg-center py-24 text-center"
+          style={{ backgroundImage: "url('https://pebblely.b-cdn.net/samples/auth_bg.jpg')" }}
         >
-          Try Pebblely free
-        </Link>
-      </div>
-    </div>
+          <h3 className="text-white text-3xl sm:text-4xl lg:text-6xl font-bold drop-shadow-lg mb-6">
+            Grow your business with AI
+          </h3>
+          <Link href={''} className="btn btn-primary">
+            Try Pebblely free
+          </Link>
+        </div>
+      </Container>
+    </Section>
   );
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Mail, Phone, User as UserIcon, Shield } from "lucide-react";
+import { useState } from 'react';
+import { Mail, Phone, User as UserIcon, Shield } from 'lucide-react';
 
 type Profile = {
   fullName: string;
@@ -18,10 +18,18 @@ type InfoFieldProps = {
 function InfoField({ label, icon: Icon, value }: InfoFieldProps) {
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium text-[#6B7280]">{label}</p>
-      <div className="flex items-center gap-2 rounded-md border border-main bg-[#F9FAFB] px-3 py-2">
-        <Icon className="h-4 w-4 text-[#9CA3AF]" />
-        <span className="text-sm text-[#111827]">{value}</span>
+      <p className="text-xs font-medium text-[color:var(--muted-foreground)]">{label}</p>
+      <div
+        className="flex items-center gap-2 rounded-md px-3 py-2 border"
+        style={{
+          background: 'color-mix(in srgb, var(--card) 92%, transparent)',
+          borderColor: 'var(--border)',
+        }}
+      >
+        <Icon className="h-4 w-4 text-[color:var(--muted-foreground)]" />
+        <span className="text-sm" style={{ color: 'var(--card-foreground)' }}>
+          {value}
+        </span>
       </div>
     </div>
   );
@@ -34,27 +42,31 @@ type EditableFieldProps = {
   onChange: (val: string) => void;
 };
 
-function EditableField({
-  label,
-  icon: Icon,
-  value,
-  onChange,
-}: EditableFieldProps) {
+function EditableField({ label, icon: Icon, value, onChange }: EditableFieldProps) {
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-medium text-[#6B7280]">{label}</p>
-      <div className="flex items-center gap-2 rounded-md border border-main bg-[#F9FAFB] px-3 py-2">
-        <Icon className="h-4 w-4 text-[#9CA3AF]" />
+      <p className="text-xs font-medium text-[color:var(--muted-foreground)]">{label}</p>
+      <div
+        className="flex items-center gap-2 rounded-md px-3 py-2 border"
+        style={{
+          background: 'color-mix(in srgb, var(--card) 96%, transparent)',
+          borderColor: 'var(--border)',
+        }}
+      >
+        <Icon className="h-4 w-4 text-[color:var(--muted-foreground)]" />
         <input
-          className="w-full border-none bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9CA3AF]"
+          className="w-full bg-transparent text-sm outline-none"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          style={{
+            color: 'var(--card-foreground)',
+          }}
+          aria-label={label}
         />
       </div>
     </div>
   );
 }
-
 
 type ProfileInfoViewProps = {
   profile: Profile;
@@ -65,16 +77,22 @@ function ProfileInfoView({ profile, onEdit }: ProfileInfoViewProps) {
   return (
     <>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-[#000000]">
+        <h2 className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
           Profile Information
         </h2>
 
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-main bg-white hover:bg-[#eee] transition-all duration-300 px-3 py-1.5 text-xs font-medium text-[#374151] hover:bg-[#F9FAFB]"
+          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition"
+          style={{
+            border: '1px solid var(--border)',
+            background: 'color-mix(in srgb, var(--card) 100%, transparent)',
+            color: 'var(--card-foreground)',
+          }}
+          aria-label="Edit profile"
         >
-          <Shield className="h-3.5 w-3.5" />
+          <Shield className="h-4 w-4" />
           Edit
         </button>
       </div>
@@ -85,10 +103,15 @@ function ProfileInfoView({ profile, onEdit }: ProfileInfoViewProps) {
         <InfoField label="Phone Number" icon={Phone} value={profile.phone} />
 
         <div className="pt-2">
-          <p className="mb-2 text-xs font-medium text-[#6B7280]">Security</p>
+          <p className="mb-2 text-xs font-medium text-[color:var(--muted-foreground)]">Security</p>
           <button
             type="button"
-            className="rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-xs font-medium text-[#374151] hover:bg-[#F3F4F6]"
+            className="rounded-md px-3 py-2 text-xs font-medium transition"
+            style={{
+              border: '1px solid var(--border)',
+              background: 'color-mix(in srgb, var(--card) 100%, transparent)',
+              color: 'var(--card-foreground)',
+            }}
           >
             Change Password
           </button>
@@ -97,7 +120,6 @@ function ProfileInfoView({ profile, onEdit }: ProfileInfoViewProps) {
     </>
   );
 }
-
 
 type ProfileInfoEditFormProps = {
   draft: Profile;
@@ -117,7 +139,9 @@ function ProfileInfoEditForm({
   return (
     <>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-[#000000]">Edit Profile</h2>
+        <h2 className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
+          Edit Profile
+        </h2>
       </div>
 
       <div className="space-y-4">
@@ -144,18 +168,29 @@ function ProfileInfoEditForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-main bg-white px-3 py-1.5 text-xs cursor-pointer font-medium text-[#374151] hover:bg-[#F9FAFB]"
+            className="rounded-md px-3 py-1.5 text-xs font-medium transition"
+            style={{
+              border: '1px solid var(--border)',
+              background: 'color-mix(in srgb, var(--card) 100%, transparent)',
+              color: 'var(--card-foreground)',
+            }}
             disabled={isSaving}
           >
             Cancel
           </button>
+
           <button
             type="button"
             onClick={onSave}
-            className="rounded-md bg-main px-3 py-1.5 text-xs font-medium text-white hover:bg-main-hover cursor-pointer transition-all duration-200 disabled:opacity-60"
+            className="rounded-md px-3 py-1.5 text-xs font-medium transition"
+            style={{
+              background: 'var(--main-color)',
+              color: 'rgb(0 0 0)',
+            }}
             disabled={isSaving}
+            aria-busy={isSaving}
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -163,12 +198,11 @@ function ProfileInfoEditForm({
   );
 }
 
-
 export default function ProfileInfoCard() {
   const [profile, setProfile] = useState<Profile>({
-    fullName: "Ahmed Al Mansoori",
-    email: "ahmed.almansoori@example.com",
-    phone: "+971 50 123 4567",
+    fullName: 'Ahmed Al Mansoori',
+    email: 'ahmed.almansoori@example.com',
+    phone: '+971 50 123 4567',
   });
 
   const [draft, setDraft] = useState<Profile>(profile);
@@ -176,7 +210,7 @@ export default function ProfileInfoCard() {
   const [isSaving, setIsSaving] = useState(false);
 
   const handleEdit = () => {
-    setDraft(profile); 
+    setDraft(profile);
     setIsEditing(true);
   };
 
@@ -188,7 +222,8 @@ export default function ProfileInfoCard() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-
+      // simulate async save (replace with real API call)
+      await new Promise((r) => setTimeout(r, 600));
       setProfile(draft);
       setIsEditing(false);
     } finally {
@@ -197,18 +232,27 @@ export default function ProfileInfoCard() {
   };
 
   return (
-    <section className="rounded-2xl border border-main bg-white p-5 shadow-sm">
-      {isEditing ? (
-        <ProfileInfoEditForm
-          draft={draft}
-          setDraft={setDraft}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          isSaving={isSaving}
-        />
-      ) : (
-        <ProfileInfoView profile={profile} onEdit={handleEdit} />
-      )}
+    <section
+      className="rounded-2xl p-5 shadow-sm"
+      style={{
+        background: 'var(--card)',
+        color: 'var(--card-foreground)',
+        border: '1px solid var(--border)',
+      }}
+    >
+      <div className="max-w-2xl mx-auto">
+        {isEditing ? (
+          <ProfileInfoEditForm
+            draft={draft}
+            setDraft={setDraft}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            isSaving={isSaving}
+          />
+        ) : (
+          <ProfileInfoView profile={profile} onEdit={handleEdit} />
+        )}
+      </div>
     </section>
   );
 }

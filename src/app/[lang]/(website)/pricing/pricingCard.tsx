@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function PricingCard({
   title,
@@ -15,49 +15,52 @@ export default function PricingCard({
 }) {
   return (
     <div
-      className={`
-        flex flex-col justify-between 
-        h-full 
-        rounded-xl p-8 shadow-sm border
+      className={`flex flex-col justify-between h-full rounded-xl p-6 md:p-8 border transition-shadow
         ${
           highlight
-            ? "bg-main border-yellow-400"
-            : "bg-card border-border"
+            ? 'bg-[color:var(--main-color)] border-[color:var(--main-hover-color)]'
+            : 'bg-card border-border'
         }
       `}
+      role="region"
+      aria-label={`${title} plan`}
     >
       <div>
-        <h2 className="text-xl font-semibold mb-2">{title}</h2>
+        <h2 className={`text-xl font-semibold ${highlight ? 'text-black' : 'text-foreground'}`}>
+          {title}
+        </h2>
 
-        <p className="text-4xl font-bold mb-1">{price}</p>
+        <p className={`text-4xl font-bold mt-3 ${highlight ? 'text-black' : 'text-foreground'}`}>
+          {price}
+        </p>
 
         {description && (
-          <p className="text-sm text-muted-foreground mb-6">{description}</p>
+          <p className="text-sm text-[color:var(--muted-foreground)] mt-2">{description}</p>
         )}
 
-        <ul className="space-y-3">
+        <ul className="space-y-2 mt-6">
           {features.map((item, i) => (
-            <li key={i} className="flex items-center gap-2 text-sm">
-              <span className="text-green-600">✔</span> {item}
+            <li key={i} className="flex items-start gap-3 text-sm md:text-base">
+              <span className="min-w-[1.2rem] text-[color:#16a34a] mt-1">✔</span>
+              <span className={highlight ? 'text-black' : 'text-foreground'}>{item}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="mt-10">
-        <Link href='checkout'>
+      <div className="mt-6">
+        <Link href="/checkout" className="block">
           <button
-          className={`
-            w-full py-3 rounded-lg font-medium  cursor-pointer
-            ${
-              highlight
-                ? "bg-black text-white hover:bg-gray-900"
-                : "bg-black text-white hover:bg-gray-900"
-            }
-          `}
-        >
-          Subscribe Now.
-        </button>
+            className={`w-full py-3 rounded-lg font-medium focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]
+              ${
+                highlight
+                  ? 'bg-black text-white hover:bg-gray-900'
+                  : 'bg-black text-white hover:bg-gray-900'
+              }
+            `}
+          >
+            Subscribe Now
+          </button>
         </Link>
       </div>
     </div>

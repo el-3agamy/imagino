@@ -1,79 +1,82 @@
-import Image from 'next/image'
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
-// for more clean code (Saeid) :
- const excludedTags = ["ugly", "necklace", "jewelry", "fingers", "hands", "face"];
-export default function Popup({selectedImage , setSelectedImage} : {selectedImage : string  , setSelectedImage : (val:string|null)=>void}) {
+const excludedTags = ['ugly', 'necklace', 'jewelry', 'fingers', 'hands', 'face'];
+
+export default function Popup({
+  selectedImage,
+  setSelectedImage,
+}: {
+  selectedImage: string;
+  setSelectedImage: (val: string | null) => void;
+}) {
   return (
-    <>
-        <div
-          className="fixed top-0 left-0 w-screen h-screen bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-6"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div
-            className="bg-white flex gap-4 rounded-2xl shadow-2xl p-6 max-w-[1000px] h-full w-full relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+    <div
+      className="popup-backdrop"
+      role="dialog"
+      aria-modal="true"
+      onClick={() => setSelectedImage(null)}
+    >
+      <div className="popup-card" onClick={(e) => e.stopPropagation()} role="document">
+        <div className="popup-image">
+          <Image
+            src={selectedImage}
+            alt="Selected gallery image"
+            width={900}
+            height={900}
+            className="w-full h-auto object-contain rounded-lg"
+            priority
+          />
+        </div>
 
-            <Image
-              src={selectedImage}
-              width={400}
-              height={600}
-              alt="popup_image"
-              className="rounded-xl mx-auto cursor-zoom-in"
-            />
+        <div className="popup-meta">
+          <h3 className="text-xl md:text-2xl font-semibold">
+            Around a tanned model{"'"}s neck — red casual top, necklace photography
+          </h3>
 
-            {/* model info and features (Saeid) : */}
-            <div className="mt-4 text-black">
+          <p className="text-sm text-muted-foreground">Excluded from image.</p>
 
-              <h3 className="text-2xl font-semibold mb-2">Around a tanned models neck,
-                red casual top, necklace photography</h3>
-              <p className="text-gray-600 mb-4">
-                Excluded from image. <br /> <br />
+          <div className="tags">
+            {excludedTags.map((t) => (
+              <span key={t} className="tag-pill">
+                {t}
+              </span>
+            ))}
+          </div>
 
-                {/* new clean version (saeid) */}
-
-                {
-                  excludedTags.map((tag, index) => (
-                    <span className=" mx-1 p-1 rounded-[5px] bg-gray-200" key={index}>
-                      {
-                        tag
-                      }
-                    </span>
-                  ))
-                }
-
-
-              </p>
-              <div>
-                <p> Reference image
-                  <Image src={selectedImage} height={100} width={100} alt={`gallery_img_reference`} />
-                </p>
-              </div> <br />
-
-              <span>
-                <h6 className="font-bold">
-                  Dimensions :
-                </h6>
-                1024 ✕ 1024
-              </span> <br />
-
-              <div className="my-2">
-                <h6 className="font-bold">
-                  Generation mode :
-                </h6>
-                GENERATE+
-              </div>
-              <br />
-
-
-              <div className="">
-                <Button className="w-full bg-main hover:bg-main-hover text-black">Use This Templete</Button>
-              </div>
+          <div className="mt-3">
+            <div className="text-sm text-muted-foreground">Reference image</div>
+            <div className="mt-2 w-28 h-28 relative rounded-md overflow-hidden border border-[color:var(--border)]">
+              <Image src={selectedImage} alt="reference" fill className="object-cover" />
             </div>
+          </div>
 
+          <div className="mt-4">
+            <div className="text-sm font-medium">Dimensions</div>
+            <div className="text-sm">1024 ✕ 1024</div>
+          </div>
+
+          <div className="mt-3">
+            <div className="text-sm font-medium">Generation mode</div>
+            <div className="text-sm">GENERATE+</div>
+          </div>
+
+          <div className="popup-actions">
+            <Button
+              className="w-full bg-[color:var(--main-color)] text-black hover:bg-[color:var(--main-hover-color)]"
+              onClick={() => {
+                setSelectedImage(null);
+              }}
+            >
+              Use This Template
+            </Button>
+
+            <Button variant="ghost" className="w-full mt-3" onClick={() => setSelectedImage(null)}>
+              Close
+            </Button>
           </div>
         </div>
-    </>
-  )
+      </div>
+    </div>
+  );
 }
