@@ -34,7 +34,13 @@ export function DashboardLayoutShell({ children }: DashboardLayoutShellProps) {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB] dark:bg-[#071026]">
+    <div
+      className={clsx(
+        'flex min-h-screen',
+        'bg-[color:var(--background)]',
+        'text-[color:var(--foreground)]'
+      )}
+    >
       <div
         className={clsx('hidden lg:block transition-all duration-300', collapsed ? 'w-20' : 'w-64')}
       >
@@ -47,7 +53,11 @@ export function DashboardLayoutShell({ children }: DashboardLayoutShellProps) {
           mobileSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
       >
-        <div className="absolute inset-0 bg-black/30" onClick={() => setMobileSidebarOpen(false)} />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'color-mix(in srgb, #000 30%, transparent)' }}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
 
         <div
           className={clsx(
@@ -69,7 +79,12 @@ export function DashboardLayoutShell({ children }: DashboardLayoutShellProps) {
           setCollapsed={setCollapsed}
           onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         />
-        <section className="flex-1 px-4 py-6 lg:px-8">{children}</section>
+        <section
+          className="flex-1 px-4 py-6 lg:px-8"
+          style={{ color: 'var(--foreground)' }}
+        >
+          {children}
+        </section>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <AppSidebar />
 
-        <section>{children}</section>
+        <section className='w-full'>{children}</section>
       </SidebarProvider>
     </>
   );

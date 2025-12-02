@@ -63,39 +63,34 @@ function prettyType(t: JobType) {
 function StatusPill({ status }: { status: JobStatus }) {
   if (status === 'done')
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300">
-        <CheckCircle className="h-3 w-3" />
-        Done
+      <span className="status-pill status-done" role="status" aria-label="done">
+        <CheckCircle className="h-3 w-3" /> Done
       </span>
     );
   if (status === 'processing')
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Processing
+      <span className="status-pill status-processing" role="status" aria-label="processing">
+        <Loader2 className="h-3 w-3 animate-spin" /> Processing
       </span>
     );
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300">
-      <XCircle className="h-3 w-3" />
-      Failed
+    <span className="status-pill status-failed" role="status" aria-label="failed">
+      <XCircle className="h-3 w-3" /> Failed
     </span>
   );
 }
 
 export default function HistoryList() {
-  const [items] = useState<HistoryItem[]>(mockData);
+  const [items, setItems] = useState<HistoryItem[]>(mockData);
   const [selected, setSelected] = useState<HistoryItem | null>(null);
 
   return (
-    <section className="rounded-2xl border border-[#E5E7EB] bg-white dark:bg-slate-900/80 p-5 shadow-sm">
+    <section className="history-section rounded-2xl border p-4 md:p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-[#111827] dark:text-slate-100">
-          Processing History
-        </h2>
+        <h2 className="text-lg font-semibold">{`Processing history`}</h2>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-300">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>All time</span>
         </div>
@@ -103,7 +98,7 @@ export default function HistoryList() {
 
       <div className="space-y-3">
         {items.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-200 dark:border-slate-800 p-6 text-center text-gray-500 dark:text-slate-400">
+          <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">
             No history yet
           </div>
         ) : (
@@ -111,78 +106,73 @@ export default function HistoryList() {
             {items.map((it) => (
               <li
                 key={it.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-slate-800 transition p-3 bg-gray-50 dark:bg-slate-800/60"
+                className="history-item flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-lg transition p-3"
               >
-                <div className="relative w-full sm:w-20 h-40 sm:h-20 flex-none overflow-hidden rounded-md bg-gray-100 dark:bg-slate-700">
+                <div className="relative w-full sm:w-24 h-44 sm:h-20 flex-none overflow-hidden rounded-md thumb-surface">
                   {it.imageSrc ? (
                     <Image
                       src={it.imageSrc}
-                      alt="thumb"
+                      alt={`thumbnail ${it.id}`}
                       fill
                       sizes="(max-width: 640px) 100vw, 80px"
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-500 dark:text-slate-300">
+                    <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                       No preview
                     </div>
                   )}
                 </div>
 
-                {/* Content */}
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <div className="flex w-full items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
-                        <h3 className="truncate text-sm font-semibold text-gray-800 dark:text-slate-100">
-                          {prettyType(it.type)}
-                        </h3>
+                        <h3 className="truncate text-sm font-semibold">{prettyType(it.type)}</h3>
                         <StatusPill status={it.status} />
                       </div>
-                      <p className="truncate text-sm text-gray-600 dark:text-slate-300 mt-1">
+                      <p className="truncate text-sm text-muted-foreground mt-1">
                         {it.inputNotes ?? '—'}
                       </p>
                     </div>
 
                     <div className="hidden sm:flex flex-col items-end gap-2">
-                      <div className="text-xs text-gray-500 dark:text-slate-400">
+                      <div className="text-xs text-muted-foreground">
                         {new Date(it.createdAt).toLocaleString()}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-2 flex flex-col items-start gap-2 sm:hidden">
-                    <div className="text-xs text-gray-500 dark:text-slate-400">
+                    <div className="text-xs text-muted-foreground">
                       {new Date(it.createdAt).toLocaleString()}
                     </div>
                     <div className="flex items-center gap-2">
                       {it.variationCount && (
-                        <div className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-slate-700/60 dark:text-slate-200">
+                        <div className="rounded-md px-2 py-1 text-xs pill-surface">
                           {it.variationCount} variations
                         </div>
                       )}
                       {it.resultNotes && (
-                        <div className="text-xs text-gray-500 dark:text-slate-300">
-                          {it.resultNotes}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{it.resultNotes}</div>
                       )}
                     </div>
                   </div>
-
                 </div>
 
-                <div className="mt-3 sm:mt-0 sm:ml-auto flex w-full sm:w-auto flex-col sm:flex-col items-stretch sm:items-end gap-2">
+                <div className="mt-3 sm:mt-0 sm:ml-auto flex w-full sm:w-auto flex-col gap-2">
                   <button
                     onClick={() => setSelected(it)}
-                    className="w-full sm:w-auto rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:hover:bg-slate-700/80"
+                    className="action-btn"
+                    aria-haspopup="dialog"
                   >
                     Details
                   </button>
                   <button
                     onClick={() => {
-                      window.open(it.imageSrc || '/', '_blank');
+                      if (it.imageSrc) window.open(it.imageSrc, '_blank');
                     }}
-                    className="w-full sm:w-auto text-xs text-indigo-600 dark:text-indigo-300 underline"
+                    className="text-sm text-[color:var(--primary)] underline"
                   >
                     View
                   </button>
@@ -197,34 +187,29 @@ export default function HistoryList() {
         <div
           role="dialog"
           aria-modal="true"
+          aria-label={`${prettyType(selected.type)} details`}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         >
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 modal-backdrop"
             onClick={() => setSelected(null)}
             aria-hidden
           />
 
-          <div
-            className="relative z-10 w-full sm:w-[min(900px,92%)] max-h-[90vh] sm:max-h-[90vh] overflow-auto bg-white dark:bg-slate-900 p-4 sm:p-6
-                          rounded-t-xl sm:rounded-2xl shadow-xl"
-          >
+          <div className="relative z-10 w-full sm:w-[min(900px,92%)] max-h-[90vh] overflow-auto modal-card">
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                <h3 className="text-lg font-semibold">
                   {prettyType(selected.type)} — {selected.id}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   {new Date(selected.createdAt).toLocaleString()}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <StatusPill status={selected.status} />
-                <button
-                  onClick={() => setSelected(null)}
-                  className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:hover:bg-slate-700/80"
-                >
+                <button onClick={() => setSelected(null)} className="ghost-btn">
                   Close
                 </button>
               </div>
@@ -232,34 +217,28 @@ export default function HistoryList() {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <div className="mb-2 text-sm font-medium text-gray-700 dark:text-slate-200">
-                  Input
-                </div>
-                <div className="rounded-md border border-gray-100 bg-gray-50 p-3 text-sm text-gray-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200">
+                <div className="mb-2 text-sm font-medium">Input</div>
+                <div className="rounded-md surface-quiet p-3 text-sm">
                   {selected.inputNotes ?? '—'}
                 </div>
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-medium text-gray-700 dark:text-slate-200">
-                  Result
-                </div>
-                <div className="rounded-md border border-gray-100 bg-gray-50 p-3 text-sm text-gray-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200">
+                <div className="mb-2 text-sm font-medium">Result</div>
+                <div className="rounded-md surface-quiet p-3 text-sm">
                   {selected.resultNotes ?? 'No details available'}
                 </div>
               </div>
 
               <div className="md:col-span-2">
-                <div className="mb-2 text-sm font-medium text-gray-700 dark:text-slate-200">
-                  Preview
-                </div>
+                <div className="mb-2 text-sm font-medium">Preview</div>
 
                 <div className="flex flex-wrap gap-3">
-                  <div className="relative h-40 w-full sm:w-40 overflow-hidden rounded-md bg-gray-100 dark:bg-slate-700">
+                  <div className="relative h-40 w-full sm:w-40 overflow-hidden rounded-md thumb-surface">
                     {selected.imageSrc ? (
                       <Image src={selected.imageSrc} alt="preview" fill className="object-cover" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-gray-500 dark:text-slate-300">
+                      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                         No preview
                       </div>
                     )}
@@ -269,9 +248,9 @@ export default function HistoryList() {
                     Array.from({ length: selected.variationCount }).map((_, i) => (
                       <div
                         key={i}
-                        className="relative h-40 w-40 overflow-hidden rounded-md bg-gray-100 dark:bg-slate-700"
+                        className="relative h-40 w-40 overflow-hidden rounded-md thumb-surface"
                       >
-                        <div className="flex h-full w-full items-center justify-center text-sm text-gray-500 dark:text-slate-300">
+                        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
                           Variation {i + 1}
                         </div>
                       </div>
@@ -285,14 +264,12 @@ export default function HistoryList() {
                 href={selected.imageSrc || '#'}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:hover:bg-slate-700/80"
+                className="outline-btn"
               >
                 Open original
               </a>
-              <button
-                onClick={() => setSelected(null)}
-                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-              >
+
+              <button onClick={() => setSelected(null)} className="primary-btn">
                 Done
               </button>
             </div>

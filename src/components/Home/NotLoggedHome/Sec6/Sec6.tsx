@@ -1,233 +1,72 @@
-import Image from 'next/image';
+import Image from "next/image";
+import Section from "@/components/shared/Section/Section";
+import Container from "@/components/shared/Container/Container";
 
 export default function Sec6() {
   return (
-    <div className="flex flex-col justify-center items-center gap-5 text-left md:text-center px-5 md:px-5">
-      <div className="text-3xl md:text-5xl font-bold text-center">
-        Create elaborate images,
-        <br /> without being a graphic designer
-      </div>
-      <div className="text-center">
-        It&apos;s like being a Photoshop pro, without actually spending the time to learn Photoshop.
-      </div>
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-6 gap-6 text-left">
-        {/* card */}
-        <div className="col-span-6 lg:col-span-2 bg-neutral-50 flex flex-col rounded-3xl space-y-8">
-          <div className="px-8 pt-8 lg:px-12 lg:pt-12">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Set your canvas size</div>
-            <div className="text-lg leading-tight">
-              You can change the dimensions up to 2048✕2048.
-            </div>
+    <Section className="py-16 bg-section dark:bg-section-dark">
+      <Container>
+        <h3 className="text-3xl md:text-5xl font-bold text-center mb-6">Create elaborate images, without being a graphic designer</h3>
+        <p className="text-center mb-8">It{"'"}s like being a Photoshop pro, without actually spending the time to learn Photoshop.</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 mb-10">
+          <div className="col-span-6 lg:col-span-2 feature-card">
+            <h4 className="text-2xl font-medium mb-2">Set your canvas size</h4>
+            <p className="text-lg">You can change the dimensions up to 2048✕2048.</p>
+            <Image src={"/assets/NotLoggedHome/sec6/settings.jpg"} width={600} height={400} alt="settings" className="mt-6 rounded-lg" />
           </div>
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/settings-mobile.jpg'}
-            alt="settingsMobile"
-            className="lg:hidden pl-10"
-          />
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/settings.jpg'}
-            alt="settingsMobile"
-            className="hidden lg:block pl-10"
-          />
-        </div>
-        {/* card */}
-        <div className="col-span-6 lg:col-span-4 bg-neutral-50 flex flex-col space-y-8 lg:space-y-16 p-8 lg:p-12 rounded-3xl">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Feature multiple products</div>
-            <div className="text-lg leading-tight">
-              You can place multiple products and props on the canvas, and Pebblely will generate
-              suitable backgrounds.
-            </div>
+
+          <div className="col-span-6 lg:col-span-4 feature-card">
+            <h4 className="text-2xl font-medium mb-2">Feature multiple products</h4>
+            <p className="text-lg mb-4">Place multiple products and props on the canvas, and we{"'"}ll generate suitable backgrounds.</p>
+            <Image src={"/assets/NotLoggedHome/sec6/multiple-product-examples.jpg"} width={900} height={400} alt="multiple examples" className="rounded-lg" />
           </div>
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/multiple-product-examples-mobile.jpg'}
-            alt="settingsMobile"
-            className="lg:hidden pl-10"
-          />
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/multiple-product-examples.jpg'}
-            alt="settingsMobile"
-            className="hidden lg:block"
-          />
-        </div>
-        {/* card */}
-        <div className="col-span-6 lg:col-span-3 bg-neutral-50 flex flex-col items-center p-8 lg:p-12 rounded-3xl space-y-8 lg:space-y-16">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Set your canvas size</div>
-            <div className="text-lg leading-tight">
-              Besides describing what you want with text, you can use a reference image to show the
-              AI what you want.
-            </div>
+
+          <div className="col-span-6 lg:col-span-3 feature-card">
+            <h4 className="text-2xl font-medium mb-2">Reference image</h4>
+            <p className="text-lg">Use a reference image to show the AI what you want.</p>
+            <Image src={"/assets/NotLoggedHome/sec6/reference-image-example.jpg"} width={600} height={400} alt="reference" className="mt-4 rounded-lg" />
           </div>
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/reference-image-example.jpg'}
-            alt="settingsMobile"
-          />
-        </div>
-        {/* card */}
-        <div className="col-span-6 lg:col-span-3 bg-neutral-50 p-8 lg:p-12 rounded-3xl space-y-8 lg:space-y-16">
-          <div className="font-medium text-2xl md:text-3xl pb-2">
-            <div className="font-medium text-2xl md:text-3xl pb-2">Match your brand colors</div>
-            <div className="text-lg leading-tight">
-              You can use your existing images as reference images to generate images of similar
-              colors, reinforcing your branding.
-            </div>
-          </div>
-          <Image
-            width={50}
-            height={50}
-            src={'/assets/NotLoggedHome/sec6/brand-color-example.jpg'}
-            alt="settingsMobile"
-          />
-        </div>
-      </div>
-      <div className="bg-neutral-50 gap-10 relative z-10 overflow-hidden py-32">
-        <div className="max-w-7xl flex flex-col justify-end lg:grid lg:grid-cols-12 w-full gap-16 mx-auto px-4">
-          <div className="col-span-4 text-left w-full space-y-4">
-            <div className="mt-2">
-              <h1 className="font-semibold text-4xl lg:text-5xl leading-none mb-10">
-                Extend your images to any size with AI
-              </h1>
-            </div>
-            <div className="text-xl">
-              You can turn a single image into multiple marketing assets.
-              <br />
-              <br />
-              Marketplace listing photos <br />
-              Social media content <br />
-              Website imagery <br />
-              Email banners <br />
-              Ad creatives <br />
-              And more
-            </div>
-          </div>
-          <div className="col-span-8">
-            <Image
-              width={600}
-              height={600}
-              src={'/assets/NotLoggedHome/sec6/resize-examples.jpg'}
-              alt="img"
-              className="w-full h-auto"
-            />
+
+          <div className="col-span-6 lg:col-span-3 feature-card">
+            <h4 className="text-2xl font-medium mb-2">Match your brand colors</h4>
+            <p className="text-lg">Use existing images to generate assets with coherent brand colors.</p>
+            <Image src={"/assets/NotLoggedHome/sec6/brand-color-example.jpg"} width={600} height={400} alt="brand colors" className="mt-4 rounded-lg" />
           </div>
         </div>
-        <div className="w-full px-4 pt-8">
-          <p className="text-center text-xl font-light text-neutral-900">
-            Suitable for all marketplaces, platforms, and channels
-          </p>
-          <div className="max-w-xl xl:max-w-7xl flex flex-wrap justify-center items-center pt-4 gap-x-2 gap-y-1 sm:gap-x-8 sm:gap-y-4 mx-auto">
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/amazon.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
+
+        <div className="bg-[color:var(--card)] p-10 rounded-xl">
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-4">
+              <h4 className="text-4xl font-semibold mb-4">Extend your images to any size with AI</h4>
+              <p className="text-xl leading-relaxed">Turn a single image into multiple marketing assets: marketplace photos, social content, website imagery, banners and ads.</p>
             </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/ebay.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/esty.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/facebook.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/instagram.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/lazada.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/pintrest.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/sene.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/shopee.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/shopefy.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
-            </div>
-            <div>
-              <Image
-                width={50}
-                height={50}
-                src={'/assets/icons/walmart.png'}
-                alt="icon"
-                className="scale-75 sm:scale-100"
-              />
+
+            <div className="lg:col-span-8">
+              <Image src={"/assets/NotLoggedHome/sec6/resize-examples.jpg"} width={900} height={500} alt="resize examples" className="w-full rounded-lg" />
             </div>
           </div>
+
+          <p className="text-center text-xl font-light mt-8 mb-4">Suitable for all marketplaces, platforms, and channels</p>
+
+          <div className="flex flex-wrap justify-center items-center gap-6">
+            {[
+              "/assets/icons/amazon.png",
+              "/assets/icons/ebay.png",
+              "/assets/icons/esty.png",
+              "/assets/icons/facebook.png",
+              "/assets/icons/instagram.png",
+              "/assets/icons/lazada.png",
+              "/assets/icons/pintrest.png",
+              "/assets/icons/shopee.png",
+              "/assets/icons/shopefy.png",
+              "/assets/icons/walmart.png",
+            ].map((src, i) => (
+              <Image key={i} src={src} alt={`platform ${i}`} width={64} height={32} className="inline-block" />
+            ))}
+          </div>
         </div>
-      </div>
-    </div>
+      </Container>
+    </Section>
   );
 }
