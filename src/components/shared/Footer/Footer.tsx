@@ -63,7 +63,7 @@ function FooterColumn({ title, items }: { title: string; items: string[] }) {
       <ul className="space-y-2 text-neutral-600 dark:text-neutral-400">
         {items.map((item) => (
           <li key={item}>
-            <Link href="#" className="hover:underline hover:text-neutral-800 dark:hover:text-white">
+            <Link href={`${item.toLowerCase()}`} className="hover:underline hover:text-neutral-800 dark:hover:text-white">
               {item}
             </Link>
           </li>
