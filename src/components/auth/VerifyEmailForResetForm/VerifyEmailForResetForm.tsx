@@ -1,10 +1,9 @@
-"use client";
+'use client';
 
-import { useRouteLang } from "@/hooks/useLang";
-import { Globe2 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useRouteLang } from '@/hooks/useLang';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 
 interface VerifyEmailFormProps {
   email: string;
@@ -23,41 +22,43 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<VerifyEmailValues>({
-    defaultValues: { code: "" },
+    defaultValues: { code: '' },
   });
 
   async function onSubmit(values: VerifyEmailValues) {
     router.push(`/${lang}/auth/reset-password`);
-    console.log("Verify reset code", values.code);
+    console.log('Verify reset code', values.code);
   }
 
   function handleResend() {
-    console.log("Resend OTP");
+    console.log('Resend OTP');
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
-          Verify Email
-        </h1>
+        <h1 className="text-xl font-semibold text-foreground sm:text-2xl">Verify Email</h1>
         <p className="text-xs text-muted-foreground sm:text-sm">
           Enter the code sent to your email
         </p>
       </header>
 
       <div className="mt-2 space-y-4">
-        <div className="rounded-2xl bg-[#F5F5F7] px-4 py-5 text-center text-xs text-muted-foreground sm:text-sm">
+        <div
+          className="rounded-2xl px-4 py-5 text-center text-xs sm:text-sm
+                        bg-[#F5F5F7] text-muted-foreground
+                        dark:bg-[color:var(--card)] dark:text-card-foreground dark:border dark:border-[color:var(--border)]"
+        >
           <p>We&apos;ve sent a 6-digit code to</p>
-          <p className="mt-1 font-semibold text-foreground">
-            {email || "email-name@gmail.com"}
+          <p className="mt-1 font-semibold text-foreground dark:text-card-foreground">
+            {email || 'email-name@gmail.com'}
           </p>
         </div>
 
         <div className="space-y-1.5">
           <label
             htmlFor="reset-verification-code"
-            className="text-xs font-medium text-foreground"
+            className="text-xs font-medium text-foreground dark:text-card-foreground"
           >
             Verification code
           </label>
@@ -67,12 +68,15 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
             inputMode="numeric"
             maxLength={6}
             placeholder="000000"
-            className="h-11 w-full rounded-lg border border-[#E4E4E7] bg-[#F5F5F7] px-3 text-center text-sm tracking-[0.4em] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent"
+            className="h-11 w-full rounded-lg border px-3 text-center text-sm tracking-[0.4em]
+                       bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
+                       focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
+                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
             aria-invalid={!!errors.code || undefined}
-            {...register("code", {
-              required: "Code is required",
-              minLength: { value: 6, message: "Code must be 6 digits" },
-              maxLength: { value: 6, message: "Code must be 6 digits" },
+            {...register('code', {
+              required: 'Code is required',
+              minLength: { value: 6, message: 'Code must be 6 digits' },
+              maxLength: { value: 6, message: 'Code must be 6 digits' },
             })}
           />
           {errors.code && (
@@ -85,15 +89,16 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 cursor-pointer w-full rounded-full bg-main text-sm font-semibold text-white shadow-[0_6px_18px_rgba(124,58,237,0.45)] transition hover:bg-main-hover disabled:cursor-not-allowed disabled:opacity-70"
+          className="h-11 cursor-pointer w-full rounded-full bg-main text-sm font-semibold text-white
+                     shadow-[0_6px_18px_rgba(124,58,237,0.45)] transition hover:bg-main-hover disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Verifying…" : "Verify"}
+          {isSubmitting ? 'Verifying…' : 'Verify'}
         </button>
 
         <button
           type="button"
           onClick={handleResend}
-          className="mt-1 cursor-pointer text-center text-xs font-semibold text-foreground hover:underline"
+          className="mt-1 cursor-pointer text-center text-xs font-semibold text-foreground hover:underline dark:text-card-foreground"
         >
           Resend OTP
         </button>
@@ -102,13 +107,13 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
       <div className="mt-4">
         <Link
           href={`/${lang}/auth/login`}
-          className="h-11 w-full rounded-full border border-[#E4E4E7] bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center"
+          className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground
+                     hover:bg-[#F5F5F7] transition inline-flex items-center justify-center
+                     dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
         >
           Back to login
         </Link>
       </div>
-
-
     </form>
   );
 }
