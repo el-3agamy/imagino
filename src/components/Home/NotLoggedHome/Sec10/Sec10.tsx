@@ -44,7 +44,7 @@ export default function Sec10() {
           <h3 className="text-white text-3xl sm:text-4xl lg:text-6xl font-bold drop-shadow-lg mb-6">
             Grow your business with AI
           </h3>
-          <Link href={''} className="btn btn-primary">
+          <Link href={'all-features'} className="btn btn-primary">
             Try Pebblely free
           </Link>
         </div>

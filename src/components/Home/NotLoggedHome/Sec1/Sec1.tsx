@@ -28,10 +28,10 @@ export default function Sec1() {
         </p>
 
         <div className="flex justify-center gap-4 flex-col sm:flex-row items-center">
-          <Link href={''} className="btn btn-primary">
+          <Link href={'all-features'} className="btn btn-primary">
             Get 40 free photos every month
           </Link>
-          <Link href={''} className="btn btn-secondary">
+          <Link href={'blogs'} className="btn btn-secondary">
             Learn how it works
           </Link>
         </div>
