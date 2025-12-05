@@ -5,21 +5,14 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { AuthInput } from '../Fields/AuthInput';
 import { useRouter } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import { fetchApi, resShape } from '@/utils/fetchApi';
 
 interface ForgotPasswordValues {
   email: string;
 }
 
-async function submitForgotPassword(values: ForgotPasswordValues) {
-  const response = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/forget-password`,
-    values
-  );
-  return response.data;
-}
 
 export function ForgotPasswordForm() {
   const lang = useRouteLang();
@@ -35,15 +28,32 @@ export function ForgotPasswordForm() {
 
  async function onSubmit(values: ForgotPasswordValues) {
   try {
-    const data = await submitForgotPassword(values);
-    toast.success('Verification code sent to your email!');
-    console.log('Forgot password response:', data);
+   
+    const response = await fetchApi<resShape>("auth/forget-password", {
+        method: "POST",
+        body: JSON.stringify(values),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        cache: "no-cache",
+      });
+    toast.success( response.errMsg || response.message ||'Verification code sent to your email!');
+    console.log('Forgot password response:', response);
+    if(response.status ===200){
     router.push(`/${lang}/auth/verify-account`);
-  } catch (err) {
-    const error = err as AxiosError<{ message: string }>;
-    const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
-    toast.error(message);
-    console.error('Forgot password error:', error);
+
+    }
+  }
+  //  catch (err) {
+  //   const error = err as {response : resShape};
+  //   const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
+  //   toast.error(message);
+  //   console.error('Forgot password error:', error);
+  // }
+  finally{
+    console.log('aya 7aga');
+    
   }
 }
 

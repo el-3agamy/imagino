@@ -1,13 +1,18 @@
+"use client"
 import Container from '@/components/shared/Container/Container';
 import Section from '@/components/shared/Section/Section';
+import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 
+export const dynamic = "force-dynamic";
+
 export default function Sec1() {
+  const lang = useRouteLang() ;
   return (
     <Section className="pt-20 pb-10">
       <Container className="text-center">
         <div className="flex justify-center items-center gap-3 mb-6">
-          <div className="tag" aria-hidden>
+          <div className="tag" aria-hidden="true">
             <span className="rounded-full px-3 py-1 bg-[color:var(--main-color)]/10 text-[color:var(--main-color)]">
               Latest
             </span>
@@ -28,10 +33,10 @@ export default function Sec1() {
         </p>
 
         <div className="flex justify-center gap-4 flex-col sm:flex-row items-center">
-          <Link href={'all-features'} className="btn btn-primary">
+          <Link href={`/${lang}/all-features`} className="btn btn-primary">
             Get 40 free photos every month
           </Link>
-          <Link href={'blogs'} className="btn btn-secondary">
+          <Link href={`/${lang}/blogs`} className="btn btn-secondary">
             Learn how it works
           </Link>
         </div>

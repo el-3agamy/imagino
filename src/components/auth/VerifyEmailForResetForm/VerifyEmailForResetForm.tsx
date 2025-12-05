@@ -7,21 +7,22 @@ import { useForm } from 'react-hook-form';
 import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
+import { fetchApi, resShape } from '@/utils/fetchApi';
 
 interface VerifyEmailFormProps {
   email: string;
 }
 
 interface VerifyEmailValues {
-  code: string;
+  firstOtp: string;
 }
-async function verifyResetCode(values: VerifyEmailValues, email: string) {
-  const response = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/confirm-email`,
-    { email, code: values.code }
-  );
-  return response.data;
-}
+// async function verifyResetCode(values: VerifyEmailValues, email: string) {
+//   const response = await axios.post(
+//     `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/confirm-email`,
+//     { email, code: values.code }
+//   );
+//   return response.data;
+// }
 
 export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
   const lang = useRouteLang();
@@ -32,15 +33,23 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<VerifyEmailValues>({
-    defaultValues: { code: '' },
+    defaultValues: { firstOtp: '' },
   });
 
  async function onSubmit(values: VerifyEmailValues) {
   try {
-    const data = await verifyResetCode(values, email);
+     const response = await fetchApi<resShape>("auth/confirm-email", {
+            method: "POST",
+            body: JSON.stringify(values),
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            cache: "no-cache",
+          });
     toast.success('Code verified successfully!');
-    console.log('Verify code response:', data);
-    router.push(`/${lang}/auth/reset-password`);
+    console.log('Verify code response:', response);
+    // router.push(`/${lang}/auth/reset-password`);
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
     const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
@@ -94,16 +103,16 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
                        bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
                        focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
                        dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
-            aria-invalid={!!errors.code || undefined}
-            {...register('code', {
+            aria-invalid={!!errors.firstOtp || undefined}
+            {...register('firstOtp', {
               required: 'Code is required',
               minLength: { value: 6, message: 'Code must be 6 digits' },
               maxLength: { value: 6, message: 'Code must be 6 digits' },
             })}
           />
-          {errors.code && (
+          {errors.firstOtp && (
             <p className="text-[11px] font-medium text-red-500" role="alert">
-              {errors.code.message}
+              {errors.firstOtp.message}
             </p>
           )}
         </div>
