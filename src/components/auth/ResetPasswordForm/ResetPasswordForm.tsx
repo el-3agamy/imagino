@@ -1,30 +1,25 @@
 'use client';
 
 import { useRouteLang } from '@/hooks/useLang';
+import { resetPassword } from '@/services/Auth.service';
+import { getCookie, removeCookie } from '@/services/ClientCookies.service';
+import { RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import axios, { AxiosError } from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 interface ResetPasswordValues {
+  otp: string;
   password: string;
   confirm: string;
 }
 
-async function submitResetPassword(values: ResetPasswordValues) {
-  const response = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/change-password`,
-    // `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/update-password`, // me4 3arf howa 3aml 2 leh !
-    values
-  );
-  return response.data;
-}
-
 export function ResetPasswordForm() {
   const lang = useRouteLang();
-  const [passwordValue, setPasswordValue] = useState<string>('');
+  const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -36,43 +31,94 @@ export function ResetPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordValues>({
     defaultValues: {
+      otp: '',
       password: '',
       confirm: '',
     },
   });
 
-  useEffect(() => {
-    setPasswordValue(watch('password'));
-  }, [watch]);
+  const passwordValue = watch('password');
+  const email = getCookie(RESET_EMAIL_COOKIE_KEY);
 
   async function onSubmit(values: ResetPasswordValues) {
-    async function onSubmit(values: ResetPasswordValues) {
-      try {
-        const data = await submitResetPassword(values);
-        toast.success('Password updated successfully!');
-        console.log('Reset password response:', data);
-      } catch (err) {
-        const error = err as AxiosError<{ message: string }>;
-        const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
-        toast.error(message);
-        console.error('Reset password error:', error);
-      }
+    if (!email) {
+      toast.error('Reset session expired. Please request a new reset link.');
+      router.push(`/${lang}/auth/change-password`);
+      return;
     }
 
+    const { ok } = await resetPassword({
+      email,
+      otp: values.otp,
+      newPassword: values.password,
+    });
+
+    if (!ok) return;
+
+    removeCookie(RESET_EMAIL_COOKIE_KEY);
+    router.push(`/${lang}/auth/login`);
   }
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <header className="space-y-1">
           <h1 className="text-xl font-semibold text-foreground sm:text-2xl">Reset Password</h1>
           <p className="text-xs text-muted-foreground sm:text-sm">
-            Choose a new password for your account
+            Enter the code sent to your email and choose a new password
           </p>
         </header>
 
         <div className="mt-2 space-y-4">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="reset-email"
+              className="text-xs font-medium text-foreground dark:text-card-foreground"
+            >
+              Email
+            </label>
+            <input
+              id="reset-email"
+              type="email"
+              value={email || ''}
+              disabled
+              className="h-11 w-full rounded-lg border px-3 text-sm
+                       bg-[#F5F5F7] border-[#E4E4E7] text-foreground
+                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="reset-otp"
+              className="text-xs font-medium text-foreground dark:text-card-foreground"
+            >
+              Verification code (OTP)
+            </label>
+            <input
+              id="reset-otp"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              className="h-11 w-full rounded-lg border px-3 text-sm tracking-[0.4em]
+                       bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
+                       focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
+                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
+              aria-invalid={!!errors.otp || undefined}
+              {...register('otp', {
+                required: 'Code is required',
+                minLength: { value: 6, message: 'Code must be 6 digits' },
+                maxLength: { value: 6, message: 'Code must be 6 digits' },
+              })}
+            />
+            {errors.otp && (
+              <p className="text-[11px] font-medium text-red-500" role="alert">
+                {errors.otp.message}
+              </p>
+            )}
+          </div>
+
           <div className="space-y-1.5">
             <label
               htmlFor="reset-password"

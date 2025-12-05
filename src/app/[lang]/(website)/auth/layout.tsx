@@ -1,12 +1,31 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import Loader from '@/components/shared/Loader/Loader';
+import { useRouteLang } from '@/hooks/useLang';
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
 export default function AuthRootLayout({ children }: AuthLayoutProps) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const loading = useAuthStore((s) => s.loading);
+  const lang = useRouteLang();
+  const router = useRouter();
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (isAuthenticated) {
+    return router.replace(`/${lang}/dashboard/profile`);
+  }
+
   return (
     <div
       className="min-h-screen w-full px-4 py-6 flex items-center justify-center"

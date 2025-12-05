@@ -57,7 +57,6 @@ function UploadProductModal({ onClose }) {
       </header>
 
       <div className="flex flex-1 flex-col sm:flex-row">
-        {/* Left: canvas / uploader */}
         <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10">
           {!preview ? (
             <div

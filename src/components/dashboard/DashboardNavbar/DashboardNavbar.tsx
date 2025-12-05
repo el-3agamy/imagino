@@ -2,9 +2,11 @@
 
 import LangDropdown from '@/components/shared/Navbar/LangDropdown';
 import { useRouteLang } from '@/hooks/useLang';
+import { logoutAction } from '@/services/Auth.Server.service';
 import { Bell, Home, LogOut, Menu } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const ThemeDropdown = dynamic(() => import('@/components/shared/Navbar/ThemeDropdown'), {
   ssr: false,
@@ -22,6 +24,7 @@ export default function DashboardNavbar({
   onToggleMobileSidebar,
 }: DashboardNavbarProps) {
   const lang = useRouteLang();
+  const router = useRouter();
 
   return (
     <header
@@ -107,6 +110,9 @@ export default function DashboardNavbar({
               border: '1px solid var(--border)',
               background: 'var(--card)',
               color: 'var(--card-foreground)',
+            }}
+            onClick={async () => {
+              await logoutAction().then(()=> router.push(`/${lang}/home`))
             }}
           >
             <LogOut size={16} />
