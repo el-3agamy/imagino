@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouteLang } from '@/hooks/useLang';
+import { useAuthStore } from '@/store/authStore';
 import { Menu, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -17,7 +18,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const lang = useRouteLang();
-  const isAuth = false;
+  const isAuth = useAuthStore((s) => s.isAuthenticated);
 
   if (pathname.includes('/auth') || pathname.includes('/dashboard')) return null;
 

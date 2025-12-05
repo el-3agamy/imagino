@@ -11,21 +11,27 @@ import Sec8 from '@/components/Home/NotLoggedHome/Sec8/Sec8';
 import Sec9 from '@/components/Home/NotLoggedHome/Sec9/Sec9';
 import UploadProductModal from '@/components/Home/uploadProductModal';
 import Container from '@/components/shared/Container/Container';
+import Loader from '@/components/shared/Loader/Loader';
 import Section from '@/components/shared/Section/Section';
+import { useAuthStore } from '@/store/authStore';
 import { ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
 export default function HomeFullPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const isAuth = false;
+  const isAuth = useAuthStore((s) => s.isAuthenticated);
+  const loading = useAuthStore((s) => s.loading);
 
-  // images — do not include /public prefix when using next/image
   const sampleImages = [
     '/assets/Home/product1.jpg',
     '/assets/Home/product2.jpg',
     '/assets/Home/product3.jpg',
   ];
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <>

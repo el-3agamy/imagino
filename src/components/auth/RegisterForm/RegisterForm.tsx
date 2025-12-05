@@ -5,83 +5,70 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
-import RegisterDetailsStep from './RegisterDetailsStep';
-import RegisterEmailStep from './RegisterEmailStep';
-import RegisterPhoneStep from './RegisterPhoneStep';
-import axios  , {AxiosError} from "axios";
-
-type RegisterStep = 'details' | 'email' | 'phone';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
+import { AuthInput } from '../Fields/AuthInput';
+import { registerAction } from '@/services/Auth.Server.service';
+import { handleApiResponse } from '@/utils/RequestHelpers';
+import { useAuthStore } from '@/store/authStore';
 
 export interface RegisterFormValues {
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
-  emailOtp: string;
-  countryCode: string;
-  phoneNumber: string;
-}
-
-async function submitRegister(values: RegisterFormValues) {
-  const {data} = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/register`,
-    values
-  );
-  return data;
 }
 
 export default function RegisterForm() {
   const lang = useRouteLang();
-  const [step, setStep] = useState<RegisterStep>('details');
-  const [loading, setLoading] = useState(false); 
+  const router = useRouter();
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormValues>({
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
     defaultValues: {
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       confirmPassword: '',
-      emailOtp: '',
-      countryCode: '+971 [UAE]',
-      phoneNumber: '',
     },
   });
 
   const passwordValue = watch('password');
-  const emailValue = watch('email');
 
   async function onSubmit(values: RegisterFormValues) {
-    if (step === 'details') {
-      setStep('email');
-    } else if (step === 'email') {
-      setStep('phone');
-    } else {
-     try {
-  const data = await submitRegister(values);
-  toast.success("Success!");
-} catch (err) {
-  const error = err as AxiosError<{ message: string }>; 
-  const message =
-    error?.response?.data?.message || 
-    error?.message ||                  
-    "Fail! something is wrong!";
+    try {
+      const response = await registerAction({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+      });
 
-  toast.error(message);
-  console.error("Register error:", error);
+      const ok = handleApiResponse(response, {
+        successMessage: 'User created successfully',
+      });
 
-      } finally {
-        setLoading(false);
-      }
+      if (!ok) return;
+      const { hydrate } = useAuthStore.getState();
+
+      await hydrate();
+      router.push(`/${lang}/auth/verify-account`);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Something went wrong! Please try again.';
+      toast.error(message);
+      console.error('Register error:', err);
     }
   }
-
-  const progressWidth = step === 'details' ? 'w-1/3' : step === 'email' ? 'w-2/3' : 'w-full';
-  const stepLabelClass = (s: RegisterStep) =>
-    `flex-1 text-center text-xs font-medium ${step === s ? 'text-main' : 'text-muted-foreground'}`;
-  const subtitle =
-    step === 'details'
-      ? 'Fill in your details to get started'
-      : step === 'email'
-      ? 'Verify your email address'
-      : 'Verify your phone number';
 
   return (
     <>
@@ -92,32 +79,158 @@ export default function RegisterForm() {
             Create Account
           </h1>
           <p className="text-xs text-muted-foreground sm:text-sm dark:text-[color:var(--muted-foreground)]">
-            {subtitle}
+            Fill in your details to get started
           </p>
         </header>
 
-        <div className="mt-2">
-          <div className="relative h-1 rounded-full progress-track bg-[#E4E4E7] dark:bg-[color:var(--border)]">
-            <div className={`absolute left-0 top-0 h-1 rounded-full progress-fill bg-main transition-all duration-300 ${progressWidth}`} />
+        <AuthInput
+          label="First Name"
+          placeholder="John"
+          autoComplete="given-name"
+          required
+          error={errors.firstName?.message}
+          {...register('firstName', {
+            required: 'First name is required',
+          })}
+        />
+
+        <AuthInput
+          label="Last Name"
+          placeholder="Doe"
+          autoComplete="family-name"
+          required
+          error={errors.lastName?.message}
+          {...register('lastName', {
+            required: 'Last name is required',
+          })}
+        />
+
+        {/* Email */}
+        <AuthInput
+          label="Email Address"
+          placeholder="you@example.com"
+          autoComplete="email"
+          required
+          error={errors.email?.message}
+          {...register('email', {
+            required: 'Email is required',
+          })}
+        />
+
+        <div className="space-y-1.5">
+          <label
+            htmlFor="register-password"
+            className="text-xs font-medium text-foreground dark:text-[color:var(--card-foreground)]"
+          >
+            Password
+          </label>
+
+          <div className="relative">
+            <input
+              id="register-password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Min 8 characters"
+              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-[color:var(--border)]
+                         bg-[#F5F5F7] dark:bg-[color:var(--input)] px-3 pr-10 text-sm text-foreground
+                         dark:text-[color:var(--card-foreground)] placeholder:text-muted-foreground/70
+                         dark:placeholder:text-[color:var(--muted-foreground)] focus:outline-none
+                         focus:ring-2 focus:ring-main focus:border-transparent"
+              autoComplete="new-password"
+              aria-invalid={!!errors.password || undefined}
+              {...register('password', {
+                required: 'Password is required',
+                minLength: {
+                  value: 8,
+                  message: 'Password must be at least 8 characters',
+                },
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute cursor-pointer inset-y-0 right-2 flex items-center rounded-full p-1.5
+                         text-muted-foreground hover:bg-black/5 focus-visible:outline-none
+                         focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6]
+                         dark:text-[color:var(--muted-foreground)]"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
           </div>
-          <div className="mt-2 flex justify-between">
-            <span title="Details" className={stepLabelClass('details')}>Details</span>
-            <span title="Email" className={stepLabelClass('email')}>Email</span>
-            <span title="Phone" className={stepLabelClass('phone')}>Phone</span>
-          </div>
+
+          <p className="text-[11px] text-muted-foreground dark:text-[color:var(--muted-foreground)]">
+            Must include 1 uppercase, 1 lowercase, and 1 number
+          </p>
+
+          {errors.password && (
+            <p className="text-[11px] font-medium text-red-500" role="alert">
+              {errors.password.message}
+            </p>
+          )}
         </div>
 
-        {step === 'details' && (
-          <RegisterDetailsStep register={register} errors={errors} isSubmitting={loading} passwordValue={passwordValue} />
-        )}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="register-confirm-password"
+            className="text-xs font-medium text-foreground dark:text-[color:var(--card-foreground)]"
+          >
+            Re-enter Password
+          </label>
 
-        {step === 'email' && (
-          <RegisterEmailStep register={register} errors={errors} isSubmitting={loading} emailValue={emailValue} />
-        )}
+          <div className="relative">
+            <input
+              id="register-confirm-password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm your password"
+              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-[color:var(--border)]
+                         bg-[#F5F5F7] dark:bg-[color:var(--input)] px-3 pr-10 text-sm text-foreground
+                         dark:text-[color:var(--card-foreground)] placeholder:text-muted-foreground/70
+                         dark:placeholder:text-[color:var(--muted-foreground)] focus:outline-none
+                         focus:ring-2 focus:ring-main focus:border-transparent"
+              autoComplete="new-password"
+              aria-invalid={!!errors.confirmPassword || undefined}
+              {...register('confirmPassword', {
+                required: 'Please confirm your password',
+                validate: (value) => value === passwordValue || 'Passwords do not match',
+              })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute cursor-pointer inset-y-0 right-2 flex items-center rounded-full p-1.5
+                         text-muted-foreground hover:bg-black/5 focus-visible:outline-none
+                         focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6]
+                         dark:text-[color:var(--muted-foreground)]"
+              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+          </div>
 
-        {step === 'phone' && (
-          <RegisterPhoneStep register={register} errors={errors} isSubmitting={loading} />
-        )}
+          {errors.confirmPassword && (
+            <p className="text-[11px] font-medium text-red-500" role="alert">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-2 cursor-pointer h-11 w-full rounded-full bg-main text-sm font-semibold
+                     text-white shadow-[0_6px_18px_rgba(124,58,237,0.45)] transition hover:bg-main-hover
+                     disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {isSubmitting ? 'Signing up…' : 'Sign Up'}
+        </button>
 
         <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted-foreground dark:text-[color:var(--muted-foreground)]">
           <span className="h-px flex-1 bg-[#E4E4E7] dark:bg-[color:var(--border)]" />
@@ -127,7 +240,11 @@ export default function RegisterForm() {
 
         <Link
           href={`/${lang}/auth/login`}
-          className="h-11 w-full rounded-full border border-[#E4E4E7] dark:border-[color:var(--border)] bg-white dark:bg-[color:var(--card)] text-center text-sm font-semibold text-foreground dark:text-[color:var(--card-foreground)] hover:bg-[#F5F5F7] dark:hover:bg-[color:var(--card)] transition inline-flex items-center justify-center"
+          className="h-11 w-full rounded-full border border-[#E4E4E7] dark:border-[color:var(--border)]
+                     bg-white dark:bg-[color:var(--card)] text-center text-sm font-semibold
+                     text-foreground dark:text-[color:var(--card-foreground)]
+                     hover:bg-[#F5F5F7] dark:hover:bg-[color:var(--card)] transition inline-flex
+                     items-center justify-center"
         >
           Login
         </Link>

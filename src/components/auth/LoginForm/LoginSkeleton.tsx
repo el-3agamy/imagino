@@ -9,11 +9,11 @@ function LoginSkeleton() {
       </header>
 
       <div className="h-7 w-full rounded-md skeleton-shimmer" />
-
+{/* 
       <div className="space-y-1.5">
         <div className="h-3 w-24 rounded skeleton-shimmer" />
         <div className="h-11 w-full rounded-lg skeleton-shimmer" />
-      </div>
+      </div> */}
 
       <div className="space-y-1.5">
         <div className="h-3 w-16 rounded skeleton-shimmer" />

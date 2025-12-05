@@ -5,5 +5,5 @@ export const metadata: Metadata = {
 };
 
 export default function VerifyAccountPage() {
-  return <VerifyEmailForResetForm email="mohamedfahim@gmail.com" />;
+  return <VerifyEmailForResetForm />;
 }
