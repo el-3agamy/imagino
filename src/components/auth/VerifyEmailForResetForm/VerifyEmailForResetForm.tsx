@@ -4,6 +4,9 @@ import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import axios, { AxiosError } from 'axios';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 interface VerifyEmailFormProps {
   email: string;
@@ -11,6 +14,13 @@ interface VerifyEmailFormProps {
 
 interface VerifyEmailValues {
   code: string;
+}
+async function verifyResetCode(values: VerifyEmailValues, email: string) {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}auth/confirm-email`,
+    { email, code: values.code }
+  );
+  return response.data;
 }
 
 export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
@@ -25,16 +35,28 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
     defaultValues: { code: '' },
   });
 
-  async function onSubmit(values: VerifyEmailValues) {
+ async function onSubmit(values: VerifyEmailValues) {
+  try {
+    const data = await verifyResetCode(values, email);
+    toast.success('Code verified successfully!');
+    console.log('Verify code response:', data);
     router.push(`/${lang}/auth/reset-password`);
-    console.log('Verify reset code', values.code);
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
+    toast.error(message);
+    console.error('Verify code error:', error);
   }
+}
+
 
   function handleResend() {
     console.log('Resend OTP');
   }
 
   return (
+   <>
+    <Toaster position="top-center" />
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold text-foreground sm:text-2xl">Verify Email</h1>
@@ -115,5 +137,6 @@ export function VerifyEmailForResetForm({ email }: VerifyEmailFormProps) {
         </Link>
       </div>
     </form>
+   </>
   );
 }
