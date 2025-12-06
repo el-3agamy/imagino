@@ -45,9 +45,7 @@ export default function LoginForm() {
       });
 
       if (!ok) return;
-      const { hydrate } = useAuthStore.getState();
-
-      await hydrate();
+      useAuthStore.getState().refreshAuth();
       router.push(`/${lang}`);
     } catch (err) {
       const message =
