@@ -17,7 +17,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   if (!isAuthenticated) {
-    return router.replace(`/${lang}/auth/login`);
+    router.replace(`/${lang}/auth/login`);
+    return null;
   }
 
   return <DashboardLayoutShell>{children}</DashboardLayoutShell>;

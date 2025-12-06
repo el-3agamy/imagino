@@ -58,9 +58,8 @@ export default function RegisterForm() {
       });
 
       if (!ok) return;
-      const { hydrate } = useAuthStore.getState();
 
-      await hydrate();
+      useAuthStore.getState().refreshAuth();
       router.push(`/${lang}/auth/verify-account`);
     } catch (err) {
       const message =

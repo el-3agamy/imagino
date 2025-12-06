@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { clearServerCookies, setServerCookies } from '@/services/ServerCookies.service';
 import { resShape } from '@/utils/fetchApi';
 import { ACCESS_TOKEN_COOKIE_KEY, REFRESH_TOKEN_COOKIE_KEY } from '@/utils/Cookies.keys';
+import { decodeJwtPayload } from '@/utils/JWT';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
@@ -95,18 +96,6 @@ export type AuthState = {
   user?: User | null;
 };
 
-function decodeJwtPayload(token: string): User | null {
-  try {
-    const [, payload] = token.split('.');
-    if (!payload) return null;
-
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = Buffer.from(normalized, 'base64').toString('utf8');
-    return JSON.parse(decoded);
-  } catch {
-    return null;
-  }
-}
 
 async function callRefreshTokenApi(refreshToken: string): Promise<{
   accessToken: string;
@@ -153,7 +142,6 @@ async function callRefreshTokenApi(refreshToken: string): Promise<{
 
 export async function getAuthState(): Promise<AuthState> {
   const cookieStore = await cookies();
-
   const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE_KEY)?.value || '';
   const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE_KEY)?.value || '';
 
@@ -161,9 +149,8 @@ export async function getAuthState(): Promise<AuthState> {
     return { isAuthenticated: false };
   }
 
-  const payload = decodeJwtPayload(accessToken);
+  const payload = decodeJwtPayload<User>(accessToken);
   const nowInSeconds = Math.floor(Date.now() / 1000);
-
   const exp = payload?.exp as number | undefined;
 
   if (!exp) {
@@ -184,15 +171,16 @@ export async function getAuthState(): Promise<AuthState> {
     return { isAuthenticated: false };
   }
 
-  await setServerCookies(refreshed?.accessToken, refreshed?.refreshToken);
+  await setServerCookies(refreshed.accessToken, refreshed.refreshToken);
 
-  const newPayload = decodeJwtPayload(refreshed?.accessToken);
+  const newPayload = decodeJwtPayload<User>(refreshed.accessToken);
 
   return {
     isAuthenticated: true,
     user: newPayload,
   };
 }
+
 export async function registerAction(payload: {
   firstName: string;
   lastName: string;
