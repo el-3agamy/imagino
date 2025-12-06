@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -18,13 +18,14 @@ export default function AuthRootLayout({ children }: AuthLayoutProps) {
   const lang = useRouteLang();
   const router = useRouter();
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace(`/${lang}/dashboard/profile`);
+    }
+  }, [isAuthenticated, lang, router]);
+
   if (loading) {
     return <Loader />;
-  }
-
-  if (isAuthenticated) {
-    router.replace(`/${lang}/dashboard/profile`);
-    return null;
   }
 
   return (
