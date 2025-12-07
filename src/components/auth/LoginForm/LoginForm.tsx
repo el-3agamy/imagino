@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouteLang } from '@/hooks/useLang';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, LoaderIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -167,7 +167,14 @@ export default function LoginForm() {
           className="submit-btn mt-1 h-11 w-full cursor-pointer rounded-md bg-main sm:text-lg font-semibold text-white transition shadow-sm hover:bg-main-hover
                      disabled:bg-[#E4E4E7] dark:disabled:bg-[color:var(--border)] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-[#E4E4E7]"
         >
-          {isSubmitting ? 'Continuing…' : 'Continue'}
+          {isSubmitting ? (
+            <span className='flex items-center justify-center gap-2'>
+              Login
+              <LoaderIcon />
+            </span>
+          ) : (
+            'Login'
+          )}
         </button>
 
         <Link
