@@ -1,15 +1,15 @@
 'use client';
 
 import { useRouteLang } from '@/hooks/useLang';
+import { loginAction } from '@/services/Auth.Server.service';
+import { useAuthStore } from '@/store/authStore';
+import { handleApiResponse } from '@/utils/RequestHelpers';
 import { Eye, EyeOff, LoaderIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
-import { loginAction } from '@/services/Auth.Server.service';
-import { handleApiResponse } from '@/utils/RequestHelpers';
-import { useAuthStore } from '@/store/authStore';
 
 interface LoginFormValues {
   email: string;
@@ -168,7 +168,7 @@ export default function LoginForm() {
                      disabled:bg-[#E4E4E7] dark:disabled:bg-[color:var(--border)] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-[#E4E4E7]"
         >
           {isSubmitting ? (
-            <span className='flex items-center justify-center gap-2'>
+            <span className="flex items-center justify-center gap-2">
               Login
               <LoaderIcon />
             </span>

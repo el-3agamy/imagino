@@ -7,7 +7,7 @@ export async function setServerCookies(accessToken: string, refreshToken: string
   const cookieStore = await cookies();
   const isProd = process.env.NODE_ENV === 'production';
 
-  const accessTokenMaxAge = 60 * 60;
+  const accessTokenMaxAge = 60 * 60 * 24;
   const refreshTokenMaxAge = 60 * 60 * 24 * 30;
 
   cookieStore.set(ACCESS_TOKEN_COOKIE_KEY, accessToken, {
