@@ -1,5 +1,7 @@
 'use server';
 
+import { PROFILE } from '@/app/[lang]/dashboard/profile/page';
+
 const baseUrl: string = process.env.NEXT_PUBLIC_API_BASE_URL as string;
 
 interface FetchServerDataOptions extends RequestInit {
@@ -45,4 +47,10 @@ export interface resShape {
   status: number;
   errors: { [key: string]: string };
   errMsg: string;
+  result?: {
+    imageUrl?: string;
+    profileImage?: string;
+    profileImageUrl?: string;
+    user?: PROFILE;
+  };
 }

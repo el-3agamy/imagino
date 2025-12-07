@@ -1,4 +1,5 @@
 'use server';
+
 import { cookies } from 'next/headers';
 import { clearServerCookies, setServerCookies } from '@/services/ServerCookies.service';
 import { resShape } from '@/utils/fetchApi';
@@ -96,20 +97,17 @@ export type AuthState = {
   user?: User | null;
 };
 
-
-async function callRefreshTokenApi(refreshToken: string): Promise<{
-  accessToken: string;
-  refreshToken: string;
-} | null> {
+async function callRefreshTokenApi(
+  refreshToken: string
+): Promise<{ accessToken: string; refreshToken: string } | null> {
   const url = `${baseUrl.replace(/\/$/, '')}/auth/refresh-token`;
 
   const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       Accept: 'application/json',
+      Authorization: `hamada ${refreshToken}`, // <<<<<< important line
     },
-    body: JSON.stringify({ refreshToken }),
     cache: 'no-cache',
   });
 
@@ -140,6 +138,27 @@ async function callRefreshTokenApi(refreshToken: string): Promise<{
   };
 }
 
+export async function refreshTokensFromCookie(): Promise<{
+  accessToken: string;
+  refreshToken: string;
+} | null> {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE_KEY)?.value || '';
+
+  if (!refreshToken) return null;
+
+  const refreshed = await callRefreshTokenApi(refreshToken);
+
+  if (!refreshed) {
+    await clearServerCookies();
+    return null;
+  }
+
+  await setServerCookies(refreshed.accessToken, refreshed.refreshToken);
+
+  return refreshed;
+}
+
 export async function getAuthState(): Promise<AuthState> {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE_KEY)?.value || '';
@@ -164,14 +183,12 @@ export async function getAuthState(): Promise<AuthState> {
     return { isAuthenticated: true, user: payload };
   }
 
-  const refreshed = await callRefreshTokenApi(refreshToken);
+  const refreshed = await refreshTokensFromCookie();
 
   if (!refreshed) {
     await clearServerCookies();
     return { isAuthenticated: false };
   }
-
-  await setServerCookies(refreshed.accessToken, refreshed.refreshToken);
 
   const newPayload = decodeJwtPayload<User>(refreshed.accessToken);
 
