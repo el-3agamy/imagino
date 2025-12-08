@@ -44,7 +44,7 @@ export async function proxyAssetRequest(assetId: string, token: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { assetId?: string } }
+  { params }: { params: Promise<{ assetId?: string }> }
 ) {
   if (!API_BASE_URL) {
     return NextResponse.json(
@@ -53,9 +53,10 @@ export async function GET(
     );
   }
 
+  const {assetID} = await params;
   const url = new URL(req.url);
   const assetId =
-    params.assetId ||
+    assetID ||
     url.searchParams.get("assetId") ||
     url.searchParams.get("assetID") ||
     url.searchParams.get("imageId") ||
