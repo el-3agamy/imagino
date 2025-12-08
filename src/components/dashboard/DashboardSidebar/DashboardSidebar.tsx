@@ -1,10 +1,17 @@
 'use client';
 
+import { useProfileStore } from '@/store/profileStore';
+import clsx from 'clsx';
 import { LucideProps } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Dispatch, ForwardRefExoticComponent, RefAttributes, SetStateAction } from 'react';
-import clsx from 'clsx';
+import {
+  Activity,
+  Dispatch,
+  ForwardRefExoticComponent,
+  RefAttributes,
+  SetStateAction,
+} from 'react';
 
 export interface NavLink {
   href: string;
@@ -20,11 +27,16 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({
   collapsed = false,
+
   onNavigate,
   navItems,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const profile = useProfileStore((s) => s.profile);
+  const name = profile?.firstName + ' ' + profile?.lastName;
+  const email = profile?.email;
+  const image = profile?.profileImage?.secure_url;
 
   const handleItemClick = (href: string) => {
     router.push(href);
@@ -55,7 +67,7 @@ export default function DashboardSidebar({
           style={{ boxShadow: 'var(--sidebar-ring, none)' }}
         >
           <Image
-            src="/assets/dashboard/profile.webp"
+            src={image ? image : '/assets/dashboard/profile.webp'}
             alt="Profile avatar"
             width={56}
             height={56}
@@ -70,10 +82,10 @@ export default function DashboardSidebar({
               style={{ color: 'var(--card-foreground)' }}
               className="text-sm font-semibold truncate"
             >
-              Ahmed Al Mansoori
+              <Activity>{name ? name : 'User Name'}</Activity>
             </p>
             <p style={{ color: 'var(--muted-foreground)' }} className="text-xs truncate">
-              ahmed.almansoori@example.com
+              <Activity>{email ? email : 'user@email.com'}</Activity>
             </p>
           </div>
         )}

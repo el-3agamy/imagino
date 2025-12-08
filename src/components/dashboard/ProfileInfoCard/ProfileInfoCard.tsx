@@ -1,17 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import type { PROFILE } from '@/app/[lang]/dashboard/profile/page';
+import { useProfileStore } from '@/store/profileStore';
 import ProfileImageSection from './ProfileImageSection';
 import ProfileInfoView from './ProfileInfoView';
 import ProfileInfoEditForm from './ProfileInfoEditForm';
 
-export default function ProfileInfoCard({ profile }: { profile: PROFILE }) {
-  const [currentProfile, setCurrentProfile] = useState<PROFILE>(profile);
-  const [isEditing, setIsEditing] = useState(false);
+export default function ProfileInfoCard() {
+  const profile = useProfileStore((state) => state.profile);
+  const isEditing = useProfileStore((state) => state.isEditing);
+  const startEditing = useProfileStore((state) => state.startEditing);
+  const stopEditing = useProfileStore((state) => state.stopEditing);
+  const updateBasicInfo = useProfileStore((state) => state.updateBasicInfo);
+  const setProfileImage = useProfileStore((state) => state.setProfileImage);
 
-  const handleEdit = () => setIsEditing(true);
-  const handleCancel = () => setIsEditing(false);
+  if (!profile) {
+    return null;
+  }
+
+  const handleEdit = () => startEditing();
+  const handleCancel = () => stopEditing();
 
   const handleUpdated = (updated: {
     fullName: string;
@@ -19,21 +26,12 @@ export default function ProfileInfoCard({ profile }: { profile: PROFILE }) {
     age?: number | null;
     gender?: string | null;
   }) => {
-    setCurrentProfile((prev) => ({
-      ...prev,
-      fullName: updated.fullName,
-      phone: updated.phone ?? prev.phone,
-      age: updated.age ?? prev.age,
-      gender: updated.gender ?? prev.gender,
-    }));
-    setIsEditing(false);
+    updateBasicInfo(updated);
+    stopEditing();
   };
 
   const handleProfileImageChange = (url: string | null) => {
-    setCurrentProfile((prev) => ({
-      ...prev,
-      profileImage: { secure_url: url ? url : '' },
-    }));
+    setProfileImage(url);
   };
 
   return (
@@ -46,19 +44,16 @@ export default function ProfileInfoCard({ profile }: { profile: PROFILE }) {
       }}
     >
       <div className="max-w-2xl mx-auto">
-        <ProfileImageSection
-          profile={currentProfile}
-          onProfileImageChange={handleProfileImageChange}
-        />
+        <ProfileImageSection profile={profile} onProfileImageChange={handleProfileImageChange} />
 
         {isEditing ? (
           <ProfileInfoEditForm
-            profile={currentProfile}
+            profile={profile}
             onCancel={handleCancel}
             onUpdated={handleUpdated}
           />
         ) : (
-          <ProfileInfoView profile={currentProfile} onEdit={handleEdit} />
+          <ProfileInfoView profile={profile} onEdit={handleEdit} />
         )}
       </div>
     </section>
