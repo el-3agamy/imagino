@@ -44,7 +44,7 @@ export async function proxyAssetRequest(assetId: string, token: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ assetId?: string }> }
+  { params }: { params: Promise<{ assetId: string }> }
 ) {
   if (!API_BASE_URL) {
     return NextResponse.json(
