@@ -53,10 +53,10 @@ export async function GET(
     );
   }
 
-  const {assetID} = await params;
+  const {assetId} = await params;
   const url = new URL(req.url);
-  const assetId =
-    assetID ||
+  const assetID =
+    assetId ||
     url.searchParams.get("assetId") ||
     url.searchParams.get("assetID") ||
     url.searchParams.get("imageId") ||
@@ -64,7 +64,7 @@ export async function GET(
   if (process.env.NODE_ENV !== "production") {
     console.debug("assets/[assetId], params assetId:", params.assetId, "query", url.searchParams.toString());
   }
-  if (!assetId) {
+  if (!assetID) {
     return NextResponse.json(
       { message: "Asset id is required" },
       { status: 400 }
@@ -79,5 +79,5 @@ export async function GET(
     );
   }
 
-  return proxyAssetRequest(assetId, token);
+  return proxyAssetRequest(assetID, token);
 }
