@@ -44,7 +44,7 @@ export async function proxyAssetRequest(assetId: string, token: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { assetId?: string } }
+  { params }: { params: { assetId: string } }
 ) {
   if (!API_BASE_URL) {
     return NextResponse.json(
@@ -53,19 +53,22 @@ export async function GET(
     );
   }
 
+  const { assetId } = params;
+
+  const url = new URL(req.url);
   const assetID =
-    params.assetId ||
-    new URL(req.url).searchParams.get("assetId") ||
-    new URL(req.url).searchParams.get("assetID") ||
-    new URL(req.url).searchParams.get("imageId") ||
+    assetId ||
+    url.searchParams.get("assetId") ||
+    url.searchParams.get("assetID") ||
+    url.searchParams.get("imageId") ||
     undefined;
 
   if (process.env.NODE_ENV !== "production") {
     console.debug(
       "assets/[assetId], params assetId:",
-      params.assetId,
+      assetId,
       "query",
-      new URL(req.url).searchParams.toString()
+      url.searchParams.toString()
     );
   }
 
@@ -86,4 +89,3 @@ export async function GET(
 
   return proxyAssetRequest(assetID, token);
 }
-
