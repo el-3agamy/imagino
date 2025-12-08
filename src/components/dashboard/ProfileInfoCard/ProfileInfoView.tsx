@@ -1,12 +1,21 @@
 import { ClientProfile } from '@/store/profileStore';
 import { Mail, Phone, Shield, User as UserIcon } from 'lucide-react';
+import { Activity } from 'react';
 import { InfoField } from './ProfileFields';
+
 type Props = {
   profile: ClientProfile;
   onEdit: () => void;
+  loadingForgetPassword: boolean;
+  onChangePassword: () => void;
 };
 
-export default function ProfileInfoView({ profile, onEdit }: Props) {
+export default function ProfileInfoView({
+  loadingForgetPassword,
+  profile,
+  onEdit,
+  onChangePassword,
+}: Props) {
   const fullName = profile.fullName ?? '';
 
   return (
@@ -46,15 +55,17 @@ export default function ProfileInfoView({ profile, onEdit }: Props) {
         <div className="pt-2">
           <p className="mb-2 text-xs font-medium text-[color:var(--muted-foreground)]">Security</p>
           <button
+            disabled={loadingForgetPassword}
             type="button"
-            className="rounded-md px-3 py-2 text-xs font-medium transition"
+            onClick={onChangePassword}
+            className="rounded-md cursor-pointer px-3 py-2 text-xs font-medium transition"
             style={{
               border: '1px solid var(--border)',
               background: 'color-mix(in srgb, var(--card) 100%, transparent)',
               color: 'var(--card-foreground)',
             }}
           >
-            Change Password
+            <Activity> {loadingForgetPassword ? `Loading...` : 'Change Password'}</Activity>
           </button>
         </div>
       </div>

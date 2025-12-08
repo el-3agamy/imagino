@@ -46,7 +46,7 @@ export default function DashboardSidebar({
   return (
     <aside
       className={clsx(
-        'h-screen flex flex-col transition-[width] duration-300 shrink-0',
+        'h-screen flex flex-col transition-[width] duration-300 shrink-0 border-e border-1',
         collapsed ? 'w-20' : 'w-64'
       )}
       style={{ minWidth: collapsed ? 80 : 256 }}
@@ -71,8 +71,8 @@ export default function DashboardSidebar({
             alt="Profile avatar"
             width={56}
             height={56}
-            className="object-cover"
-            priority
+            className="object-contain w-[56px] h-[56px]"
+            loading="eager"
           />
         </div>
 
