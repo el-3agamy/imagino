@@ -40,6 +40,7 @@ export default function RegisterForm() {
       password: '',
       confirmPassword: '',
     },
+    
   });
 
   const passwordValue = watch('password');

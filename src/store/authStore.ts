@@ -6,7 +6,8 @@ import {
   type AuthState,
   type User,
 } from '@/services/Auth.Server.service';
-import { create } from 'zustand';
+import { create } from 'zustand'
+
 
 type AuthStoreState = AuthState & {
   loading: boolean;

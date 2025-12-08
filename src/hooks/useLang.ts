@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 
 export function useRouteLang(defaultLang: string = 'en') {
+  
   const params = useParams<{ lang?: string }>();
 
   const paramLang =
