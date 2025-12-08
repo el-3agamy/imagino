@@ -1,18 +1,18 @@
 'use client';
 
-import { useRef, useState, type ChangeEvent } from 'react';
-import Image from 'next/image';
-import { toast } from 'sonner';
 import {
   deleteProfileImageAction,
   uploadProfileImageAction,
 } from '@/services/ProfileActions.service';
-import { handleApiResponse } from '@/utils/RequestHelpers';
-import type { PROFILE } from '@/app/[lang]/dashboard/profile/page';
+import { ClientProfile } from '@/store/profileStore';
 import type { resShape } from '@/utils/fetchApi';
+import { handleApiResponse } from '@/utils/RequestHelpers';
+import Image from 'next/image';
+import { useRef, useState, type ChangeEvent } from 'react';
+import { toast } from 'sonner';
 
 type Props = {
-  profile: PROFILE;
+  profile: ClientProfile;
   onProfileImageChange: (url: string | null) => void;
 };
 

@@ -5,14 +5,14 @@ import { Phone, User as UserIcon } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import type { PROFILE } from '@/app/[lang]/dashboard/profile/page';
 import { updateBasicInfoAction } from '@/services/ProfileActions.service';
+import { ClientProfile } from '@/store/profileStore';
 import { handleApiResponse } from '@/utils/RequestHelpers';
 import { basicInfoSchema, type BasicInfoFormValues } from '@/validation/ProfileSchema';
 import { EditableField, SelectField } from './ProfileFields';
 
 type Props = {
-  profile: PROFILE;
+  profile: ClientProfile;
   onCancel: () => void;
   onUpdated: (updated: {
     fullName: string;

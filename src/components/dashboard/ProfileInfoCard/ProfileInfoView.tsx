@@ -1,10 +1,8 @@
-
+import { ClientProfile } from '@/store/profileStore';
 import { Mail, Phone, Shield, User as UserIcon } from 'lucide-react';
-import type { PROFILE } from '@/app/[lang]/dashboard/profile/page';
 import { InfoField } from './ProfileFields';
-
 type Props = {
-  profile: PROFILE;
+  profile: ClientProfile;
   onEdit: () => void;
 };
 

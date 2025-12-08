@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import ProfileInfoCardSkeleton from '../ProfileInfoCard/ProfileInfoCardSkeleton';
-import { PROFILE } from '@/app/[lang]/dashboard/profile/page';
+import type { PROFILE } from '@/app/[lang]/dashboard/profile/page';
+import { useProfileStore } from '@/store/profileStore';
 
 const ProfileInfoCard = dynamic(
   () => import('../ProfileInfoCard/ProfileInfoCard').then((mod) => mod.default),
@@ -13,5 +15,11 @@ const ProfileInfoCard = dynamic(
 );
 
 export default function ProfileSection({ profile }: { profile: PROFILE }) {
-  return <ProfileInfoCard profile={profile} />;
+  const setProfile = useProfileStore((state) => state.setProfile);
+
+  useEffect(() => {
+    setProfile(profile);
+  }, [profile, setProfile]);
+
+  return <ProfileInfoCard />;
 }
