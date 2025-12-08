@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { getImageWithoutBackground } from "@/services/images.service";
 
 /**
  * AllFeatures - One-page features UI for Product Photo Editor
@@ -63,23 +64,17 @@ export default function AllFeatures() {
         setProcessing(true);
 
         try {
-            // send form-data to our Next.js API route which will proxy to chosen provider
+            // إنشاء FormData
             const fd = new FormData();
-            fd.append("image", file);
-            fd.append("provider", provider);
+            fd.append("imageFile", file);
 
-            const res = await fetch("/api/remove-bg", {
-                method: "POST",
-                body: fd,
-            });
+            const result = await getImageWithoutBackground(fd);
 
-            if (!res.ok) throw new Error("remove-bg failed");
-            const json = await res.json();
-            // Expect { result_url }
-            if (json?.result_url) {
-                setPreview(json.result_url);
-                setHistory((h) => [json.result_url, ...h].slice(0, 20));
-            }
+            const imageUrl = result.imageSrc;
+            if (!imageUrl) throw new Error("No image returned from remove-bg");
+
+            setPreview(imageUrl);
+            setHistory((key) => [imageUrl, ...key].slice(0, 20));
         } catch (err) {
             console.error(err);
             alert("Error removing background — check console.");
