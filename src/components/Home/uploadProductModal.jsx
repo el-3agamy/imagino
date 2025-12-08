@@ -3,55 +3,50 @@
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
+import { removeBackground, RemoveBackgroundError } from '@/lib/removeBackground';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [productName, setProductName] = useState('');
+  const [processedAsset, setProcessedAsset] = useState(null);
   const inputRef = useRef(null);
+  const router = useRouter();
+  const params = useParams();
 
   const uploadImageWithoutBackground = useCallback(
     async (imageFile) => {
-      const formData = new FormData();
-      formData.append('imageFile', imageFile);
-
       setError(null);
       setIsProcessing(true);
       setPreview(null);
+      setProductName('');
+      setProcessedAsset(null);
 
       try {
-        const response = await fetch('/api/remove-background', {
-          method: 'POST',
-          body: formData,
-          cache: 'no-store',
-        });
+        const result = await removeBackground({ imageFile });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            setError('You must be logged in to process images.');
-            toast.error('Please log in to continue.');
-            return;
-          }
-          throw new Error(data?.message || 'Failed to remove background');
+        setPreview(result.url);
+        if (result.filename) {
+          setProductName(result.filename);
         }
-
-        const processedUrl =
-          data?.result?.url || data?.result?.imageUrl || data?.result?.profileImage || null;
-
-        if (!processedUrl) {
-          throw new Error('No processed image returned from the server');
-        }
-
-        setPreview(processedUrl);
-        if (data?.result?.filename) {
-          setProductName(data.result.filename);
+        if (result.id) {
+          setProcessedAsset({
+            id: result.id,
+            url: result.url,
+            filename: result.filename || '',
+          });
         }
       } catch (err) {
+        if (err instanceof RemoveBackgroundError && err.status === 401) {
+          const message = 'You must be logged in to process images.';
+          setError(message);
+          toast.error('Please log in to continue.');
+          return;
+        }
         const message = err instanceof Error ? err.message : 'Unexpected error occurred';
         setError(message);
         toast.error(message);
@@ -99,6 +94,23 @@ function UploadProductModal({ onClose }) {
     multiple: false,
     disabled: isProcessing,
   });
+
+  const handleSaveAsset = () => {
+    if (!processedAsset?.id) {
+      toast.error('Process an image before saving.');
+      return;
+    }
+
+    const langParam = params?.lang;
+    const lang = Array.isArray(langParam)
+      ? langParam[0]
+      : typeof langParam === 'string'
+        ? langParam
+        : 'en';
+
+    const queryString = new URLSearchParams({ assetId: processedAsset.id });
+    router.push(`/${lang}/all-features?${queryString.toString()}`);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col bg-background text-foreground">
@@ -183,6 +195,8 @@ function UploadProductModal({ onClose }) {
           ) : null}
 
           <button
+            type="button"
+            onClick={handleSaveAsset}
             className="mt-2 w-full rounded-[10px] bg-main px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-main-hover disabled:cursor-not-allowed disabled:opacity-65"
             disabled={isProcessing || !preview}
           >

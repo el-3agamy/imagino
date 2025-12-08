@@ -1,25 +1,18 @@
 'use client';
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import {
-  ImageIcon,
-  Layers,
-  Wand2,
-  Expand,
-  Download,
-  Sparkles,
-  Sliders,
-  Trash2,
-  Cloud,
-  Cpu,
-  Image,
-} from 'lucide-react';
+import { ImageIcon, Layers, Wand2, Expand, Download, Sparkles, Trash2, Image } from 'lucide-react';
 
 // shadcn components (assumes you have them in your project)
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { removeBackground, RemoveBackgroundError } from '@/lib/removeBackground';
+
+type AiEdit = { operation?: string | null };
+
+const hasRemoveBackgroundEdit = (edits?: AiEdit[] | null): boolean =>
+  Array.isArray(edits) && edits.some((edit) => edit?.operation === 'remove-background');
 
 /**
  * AllFeatures - One-page features UI for Product Photo Editor
@@ -40,49 +33,126 @@ export default function AllFeatures() {
   const [processing, setProcessing] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [provider, setProvider] = useState<'cloudinary' | 'replicate' | 'fal' | 'local'>(
-    'cloudinary'
-  );
+  const provider: 'cloudinary' | 'replicate' | 'fal' | 'local' = 'cloudinary';
+  const [imageName, setImageName] = useState('');
+  const [assetLoading, setAssetLoading] = useState(false);
+  const [assetError, setAssetError] = useState<string | null>(null);
+  const [currentAssetId, setCurrentAssetId] = useState<string | null>(null);
+  const [hasRemovedBackground, setHasRemovedBackground] = useState(false);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const searchParams = useSearchParams();
+  const assetIdFromQuery = searchParams.get('assetId');
+
+  useEffect(() => {
+    if (!assetIdFromQuery) {
+      setCurrentAssetId(null);
+      setHasRemovedBackground(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchAsset = async () => {
+      setAssetLoading(true);
+      setAssetError(null);
+      try {
+        const res = await fetch(`/api/assets?assetId=${assetIdFromQuery}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.message || 'Failed to load asset');
+        }
+
+        const asset = data?.result?.image;
+        if (!asset?.url) {
+          throw new Error('Asset missing preview url');
+        }
+
+        if (cancelled) return;
+
+        const derivedAssetId = asset?._id ? String(asset._id) : assetIdFromQuery;
+        const alreadyRemoved = hasRemoveBackgroundEdit(asset?.aiEdits as AiEdit[] | null);
+
+        setFile(null);
+        setPreview(asset.url);
+        setImageName(asset.filename || '');
+        setHistory((h) => (h[0] === asset.url ? h : [asset.url, ...h].slice(0, 20)));
+        setCurrentAssetId(derivedAssetId ?? null);
+        setHasRemovedBackground(alreadyRemoved);
+      } catch (error) {
+        if (!cancelled) {
+          const message = error instanceof Error ? error.message : 'Unexpected error loading asset';
+          setAssetError(message);
+          setHasRemovedBackground(false);
+          console.error(message);
+        }
+      } finally {
+        if (!cancelled) {
+          setAssetLoading(false);
+        }
+      }
+    };
+
+    fetchAsset();
+    return () => {
+      cancelled = true;
+    };
+  }, [assetIdFromQuery]);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
     setPreview(URL.createObjectURL(f));
+    setImageName(f.name || '');
+    setAssetError(null);
+    setCurrentAssetId(null);
+    setHasRemovedBackground(false);
   }
 
   function clear() {
     setFile(null);
     setPreview(null);
+    setImageName('');
+    setAssetError(null);
+    setCurrentAssetId(null);
+    setHasRemovedBackground(false);
   }
 
   async function callRemoveBg() {
-    if (!file) return;
+    if (!file && !currentAssetId) {
+      const message = 'Upload or select an image before removing the background.';
+      setAssetError(message);
+      return;
+    }
+
     setProcessing(true);
+    setAssetError(null);
 
     try {
-      // send form-data to our Next.js API route which will proxy to chosen provider
-      const fd = new FormData();
-      fd.append('image', file);
-      fd.append('provider', provider);
-
-      const res = await fetch('/api/remove-bg', {
-        method: 'POST',
-        body: fd,
+      const result = await removeBackground({
+        imageFile: file ?? undefined,
+        imageId: file ? undefined : currentAssetId,
       });
 
-      if (!res.ok) throw new Error('remove-bg failed');
-      const json = await res.json();
-      // Expect { result_url }
-      if (json?.result_url) {
-        setPreview(json.result_url);
-        setHistory((h) => [json.result_url, ...h].slice(0, 20));
+      setPreview(result.url);
+      setHistory((h) => (h[0] === result.url ? h : [result.url, ...h].slice(0, 20)));
+      setImageName(result.filename || imageName || '');
+      if (result.id) {
+        setCurrentAssetId(result.id);
       }
+      setHasRemovedBackground(hasRemoveBackgroundEdit(result.aiEdits));
+      setFile(null);
     } catch (err) {
+      const message =
+        err instanceof RemoveBackgroundError
+          ? err.message
+          : err instanceof Error
+          ? err.message
+          : 'Error removing background';
+      setAssetError(message);
+      alert(message);
       console.error(err);
-      alert('Error removing background — check console.');
     } finally {
       setProcessing(false);
     }
@@ -115,11 +185,15 @@ export default function AllFeatures() {
     if (!preview) return;
     const a = document.createElement('a');
     a.href = preview;
+    a.target = '_blank';
     a.download = 'product-shot.png';
     document.body.appendChild(a);
     a.click();
     a.remove();
   }
+
+  const canRemoveBackground = Boolean(file || currentAssetId);
+  const removeBgDisabled = !canRemoveBackground || processing || hasRemovedBackground;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 p-8">
@@ -170,18 +244,10 @@ export default function AllFeatures() {
                 <div className="grid grid-cols-2 gap-3">
                   <Button
                     onClick={callRemoveBg}
-                    disabled={!file || processing}
+                    disabled={removeBgDisabled}
                     className="rounded-2xl"
                   >
                     <Layers className="w-4 h-4 mr-2" /> Remove BG
-                  </Button>
-
-                  <Button
-                    onClick={() => applyTemplate('studio-light')}
-                    disabled={!preview || processing}
-                    className="rounded-2xl"
-                  >
-                    <Wand2 className="w-4 h-4 mr-2" /> Apply Template
                   </Button>
 
                   <Button
@@ -198,6 +264,14 @@ export default function AllFeatures() {
                     className="rounded-2xl"
                   >
                     <Sparkles className="w-4 h-4 mr-2" /> Auto Enhance
+                  </Button>
+
+                  <Button
+                    onClick={() => applyTemplate('studio-light')}
+                    disabled={!preview || processing}
+                    className="rounded-2xl"
+                  >
+                    <Wand2 className="w-4 h-4 mr-2" /> Generate
                   </Button>
                 </div>
 
@@ -284,6 +358,10 @@ export default function AllFeatures() {
                       transition={{ duration: 0.35 }}
                       className="max-h-full max-w-full object-contain p-4"
                     />
+                  ) : assetLoading ? (
+                    <div className="text-center text-slate-500">
+                      <p>Loading your asset…</p>
+                    </div>
                   ) : (
                     <div className="text-center text-slate-400">
                       <p className="text-sm">No preview yet — upload an image and start editing.</p>
@@ -296,26 +374,18 @@ export default function AllFeatures() {
                     </div>
                   )}
                 </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Badge className="px-3 py-1">Preview</Badge>
-                    <div className="text-sm text-slate-500">{file ? file.name : '—'}</div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-slate-400">
-                      Processing: {processing ? 'Yes' : 'No'}
-                    </div>
-                    <Button onClick={() => alert('Open advanced editor (stub)')}>Advanced</Button>
-                  </div>
-                </div>
+                {imageName ? (
+                  <p className="text-sm text-slate-600 text-center">{imageName}</p>
+                ) : null}
+                {assetError ? (
+                  <p className="text-sm text-red-500 text-center">{assetError}</p>
+                ) : null}
               </div>
             </CardContent>
           </Card>
 
           <motion.div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="rounded-2xl">
+            {/* <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">Enhancer & Upscale</CardTitle>
               </CardHeader>
@@ -337,7 +407,7 @@ export default function AllFeatures() {
                   that translate these actions to Cloudinary / Replicate / Fal.ai calls.
                 </p>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="rounded-2xl">
               <CardHeader>
