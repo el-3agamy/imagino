@@ -23,7 +23,6 @@ export default function ProfileImageSection({ profile, onProfileImageChange }: P
 
   const profileImageUrl = profile?.profileImage?.secure_url ?? null;
 
-
   const handleTriggerFileInput = () => {
     fileInputRef.current?.click();
   };
@@ -45,7 +44,6 @@ export default function ProfileImageSection({ profile, onProfileImageChange }: P
       const ok = handleApiResponse(response, {
         successMessage: 'Profile image updated!',
       });
-
 
       if (!ok) {
         onProfileImageChange(previousUrl);
@@ -113,7 +111,8 @@ export default function ProfileImageSection({ profile, onProfileImageChange }: P
             height={100}
             src={profileImageUrl as string}
             alt="Profile"
-            className="h-full w-full object-cover"
+            loading="eager"
+            className="h-full w-full object-contain"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-[10px] text-[color:var(--muted-foreground)]">
