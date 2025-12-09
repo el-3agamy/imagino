@@ -6,16 +6,12 @@ import {
   type AuthState,
   type User,
 } from '@/services/Auth.Server.service';
-<<<<<<< HEAD
-import { create } from 'zustand'
 
-=======
 import { getCookie } from '@/services/ClientCookies.service';
 import { getServerCookies } from '@/services/ServerCookies.service';
 import { ACCESS_TOKEN_COOKIE_KEY } from '@/utils/Cookies.keys';
 import { decodeJwtPayload } from '@/utils/JWT';
 import { create } from 'zustand';
->>>>>>> a6eb158ed8e6cb87ae42d2c645651cd49fdcb9bc
 
 type AuthStoreState = AuthState & {
   loading: boolean;
