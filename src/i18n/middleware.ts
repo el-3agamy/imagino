@@ -1,16 +1,18 @@
-import { NextResponse } from "next/server";
 import { languages, defaultLang } from "@/i18n/settings";
 
-export function middleware(req: { nextUrl: { pathname: string; }; url: string | URL | undefined; }) {
-  const pathname = req.nextUrl.pathname;
+export function middleware(req: Request) {
+  const url = new URL(req.url);
+  const pathname = url.pathname;
 
+  // Check if the URL already starts with a supported language
   const hasLang = languages.some((lng) => pathname.startsWith(`/${lng}`));
 
   if (!hasLang) {
-    return NextResponse.redirect(
-      new URL(`/${defaultLang}${pathname}`, req.url)
-    );
+    // redirect to default language
+    url.pathname = `/${defaultLang}${pathname}`;
+    return Response.redirect(url);
   }
 
-  return NextResponse.next();
+  // continue the request
+  return new Response(null, { status: 200 });
 }
