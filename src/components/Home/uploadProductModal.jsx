@@ -3,24 +3,74 @@
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
+import { removeBackground, RemoveBackgroundError } from '@/lib/removeBackground';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [productName, setProductName] = useState('');
+  const [processedAsset, setProcessedAsset] = useState(null);
   const inputRef = useRef(null);
+  const router = useRouter();
+  const params = useParams();
 
-  const handleFiles = useCallback((files) => {
-    const imageFile = files?.[0];
-    if (!imageFile) return;
+  const uploadImageWithoutBackground = useCallback(
+    async (imageFile) => {
+      setError(null);
+      setIsProcessing(true);
+      setPreview(null);
+      setProductName('');
+      setProcessedAsset(null);
 
-    const url = URL.createObjectURL(imageFile);
-    setPreview(url);
-  }, []);
+      try {
+        const result = await removeBackground({ imageFile });
+
+        setPreview(result.url);
+        if (result.filename) {
+          setProductName(result.filename);
+        }
+        if (result.id) {
+          setProcessedAsset({
+            id: result.id,
+            url: result.url,
+            filename: result.filename || '',
+          });
+        }
+      } catch (err) {
+        if (err instanceof RemoveBackgroundError && err.status === 401) {
+          const message = 'You must be logged in to process images.';
+          setError(message);
+          toast.error('Please log in to continue.');
+          return;
+        }
+        const message = err instanceof Error ? err.message : 'Unexpected error occurred';
+        setError(message);
+        toast.error(message);
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    []
+  );
+
+  const handleFiles = useCallback(
+    async (files) => {
+      if (!files || files.length === 0) return;
+      const imageFile = Array.isArray(files) ? files[0] : files.item(0);
+      if (!imageFile) return;
+
+      await uploadImageWithoutBackground(imageFile);
+    },
+    [uploadImageWithoutBackground]
+  );
 
   const onDrop = useCallback(
-    (acceptedFiles) => {
+    async (acceptedFiles) => {
       if (acceptedFiles && acceptedFiles.length > 0) {
-        handleFiles(acceptedFiles);
+        await handleFiles(acceptedFiles);
       }
     },
     [handleFiles]
@@ -30,10 +80,10 @@ function UploadProductModal({ onClose }) {
     inputRef.current?.click();
   };
 
-  const onFileChange = (event) => {
+  const onFileChange = async (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      handleFiles(files);
+      await handleFiles(files);
     }
   };
 
@@ -41,7 +91,25 @@ function UploadProductModal({ onClose }) {
     onDrop,
     accept: { 'image/*': [] },
     multiple: false,
+    disabled: isProcessing,
   });
+
+  const handleSaveAsset = () => {
+    if (!processedAsset?.id) {
+      toast.error('Process an image before saving.');
+      return;
+    }
+
+    const langParam = params?.lang;
+    const lang = Array.isArray(langParam)
+      ? langParam[0]
+      : typeof langParam === 'string'
+        ? langParam
+        : 'en';
+
+    const queryString = new URLSearchParams({ assetId: processedAsset.id });
+    router.push(`/${lang}/all-features?${queryString.toString()}`);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex min-h-screen flex-col bg-background text-foreground">
@@ -58,7 +126,15 @@ function UploadProductModal({ onClose }) {
 
       <div className="flex flex-1 flex-col sm:flex-row">
         <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10">
-          {!preview ? (
+          {isProcessing ? (
+            <div className="flex h-72 w-full max-w-md flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground sm:h-88 sm:max-w-lg">
+              <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-main border-t-transparent" />
+              <p className="font-medium text-foreground">Removing background...</p>
+              <p className="mt-2 max-w-xs text-xs text-muted-foreground">
+                This may take a few seconds depending on your image size.
+              </p>
+            </div>
+          ) : !preview ? (
             <div
               {...getRootProps()}
               onClick={onClickUpload}
@@ -79,7 +155,7 @@ function UploadProductModal({ onClose }) {
               </p>
             </div>
           ) : (
-            <div className="flex w-full max-w-3xl items-center justify-center bg-muted px-4 py-6 sm:px-8 sm:py-10">
+            <div className="flex w-full max-w-3xl items-center justify-center bg-muted px-4 py-6 sm:px-8 sm:py-10 border border-2 rounded-[10px]">
               <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-[10px] bg-card">
                 <Image src={preview} alt="Preview" fill className="object-contain" />
               </div>
@@ -92,27 +168,13 @@ function UploadProductModal({ onClose }) {
             accept="image/*"
             className="hidden"
             onChange={onFileChange}
+            disabled={isProcessing}
           />
         </section>
 
         {/* Right: controls */}
         <aside className="flex w-full flex-col gap-4 border-t border-border px-4 py-6 sm:w-80 sm:border-l sm:border-t-0 sm:px-6 sm:py-8">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Zoom
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              defaultValue="10"
-              className="mt-2 w-full accent-main"
-            />
-          </div>
-
-          <button className="mt-1 w-full rounded-[10px] bg-secondary px-4 py-2 text-sm font-medium text-muted-foreground">
-            Refine background
-          </button>
+          
 
           <div className="mt-2 flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -121,12 +183,23 @@ function UploadProductModal({ onClose }) {
             <input
               type="text"
               placeholder="Untitled"
+              value={productName}
+              onChange={(event) => setProductName(event.target.value)}
               className="h-9 rounded-[10px] border border-border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-main"
             />
           </div>
 
-          <button className="mt-4 w-full rounded-[10px] bg-main px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-main-hover">
-            {preview ? 'Save asset' : 'Save asset'}
+          {error ? (
+            <p className="text-sm text-red-500">{error}</p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleSaveAsset}
+            className="mt-2 w-full rounded-[10px] bg-main px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-main-hover disabled:cursor-not-allowed disabled:opacity-65"
+            disabled={isProcessing || !preview}
+          >
+            {isProcessing ? 'Processing…' : preview ? 'Save asset' : 'Select an image'}
           </button>
         </aside>
       </div>

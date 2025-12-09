@@ -4,13 +4,13 @@ import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthInput } from '../Fields/AuthInput';
 import { registerAction } from '@/services/Auth.Server.service';
 import { handleApiResponse } from '@/utils/RequestHelpers';
 import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 export interface RegisterFormValues {
   firstName: string;
@@ -59,9 +59,8 @@ export default function RegisterForm() {
       });
 
       if (!ok) return;
-      const { hydrate } = useAuthStore.getState();
 
-      await hydrate();
+      useAuthStore.getState().refreshAuth();
       router.push(`/${lang}/auth/verify-account`);
     } catch (err) {
       const message =
@@ -73,7 +72,6 @@ export default function RegisterForm() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 register-form">
         <header className="space-y-1 text-center">
           <h1 className="text-xl font-semibold text-foreground sm:text-2xl dark:text-[color:var(--card-foreground)]">

@@ -2,8 +2,8 @@
 
 import LangDropdown from '@/components/shared/Navbar/LangDropdown';
 import { useRouteLang } from '@/hooks/useLang';
-import { logoutAction } from '@/services/Auth.Server.service';
-import { Bell, Home, LogOut, Menu } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { Home, LogOut, Menu } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ export default function DashboardNavbar({
   onToggleMobileSidebar,
 }: DashboardNavbarProps) {
   const lang = useRouteLang();
+  const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
 
   return (
@@ -74,25 +75,6 @@ export default function DashboardNavbar({
         </div>
 
         <div className="flex items-center gap-4">
-          <Link
-            href={`/${lang}/notifications`}
-            aria-label="Notifications"
-            className="relative flex items-center justify-center"
-            style={{ color: 'var(--foreground)' }}
-          >
-            <Bell size={20} />
-            <span
-              className="absolute -top-1 -right-2 rounded-full h-4 w-4 flex items-center justify-center text-[10px]"
-              style={{
-                background: '#ef4444',
-                color: '#fff',
-                fontWeight: 600,
-              }}
-            >
-              3
-            </span>
-          </Link>
-
           <LangDropdown />
 
           <div className="hidden md:inline-flex">
@@ -112,7 +94,8 @@ export default function DashboardNavbar({
               color: 'var(--card-foreground)',
             }}
             onClick={async () => {
-              await logoutAction().then(()=> router.push(`/${lang}/home`))
+              await logout();
+              router.push(`/${lang}/home`);
             }}
           >
             <LogOut size={16} />

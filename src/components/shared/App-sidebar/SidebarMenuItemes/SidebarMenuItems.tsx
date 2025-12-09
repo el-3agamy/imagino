@@ -1,12 +1,7 @@
-import React from "react";
-import {
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@radix-ui/react-label";
-import sidebarItensDummyData from "@/utils/SidebarDummyData";
-
+import { Checkbox } from '@/components/ui/checkbox';
+import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import sidebarItensDummyData from '@/utils/SidebarDummyData';
+import { Label } from '@radix-ui/react-label';
 
 export default function SidebarMenuItemsDummyData() {
   return (
@@ -14,9 +9,7 @@ export default function SidebarMenuItemsDummyData() {
       {Object.entries(sidebarItensDummyData).map(([sectionName, items]) => (
         <div key={sectionName}>
           {/* Section Title */}
-          <h1 className="text-3xl ps-3 capitalize">
-            {sectionName.replace(/([A-Z])/g, " $1")}
-          </h1>
+          <h1 className="text-3xl ps-3 capitalize">{sectionName.replace(/([A-Z])/g, ' $1')}</h1>
 
           {/* Section Items */}
           {items.map((item) => (

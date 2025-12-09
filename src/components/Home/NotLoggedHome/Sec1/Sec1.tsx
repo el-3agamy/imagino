@@ -1,13 +1,13 @@
-"use client"
+'use client';
 import Container from '@/components/shared/Container/Container';
 import Section from '@/components/shared/Section/Section';
 import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default function Sec1() {
-  const lang = useRouteLang() ;
+  const lang = useRouteLang();
   return (
     <Section className="pt-20 pb-10">
       <Container className="text-center">
@@ -33,7 +33,7 @@ export default function Sec1() {
         </p>
 
         <div className="flex justify-center gap-4 flex-col sm:flex-row items-center">
-          <Link href={`/${lang}/all-features`} className="btn btn-primary">
+          <Link href={`/${lang}/auth/login`} className="btn btn-primary">
             Get 40 free photos every month
           </Link>
           <Link href={`/${lang}/blogs`} className="btn btn-secondary">

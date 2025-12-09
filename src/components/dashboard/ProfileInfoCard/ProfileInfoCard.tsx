@@ -1,234 +1,77 @@
 'use client';
 
+import { useProfileStore } from '@/store/profileStore';
+import ProfileImageSection from './ProfileImageSection';
+import ProfileInfoEditForm from './ProfileInfoEditForm';
+import ProfileInfoView from './ProfileInfoView';
+
+import { useRouteLang } from '@/hooks/useLang';
+import { forgotPassword } from '@/services/Auth.service';
+import { setCookie } from '@/services/ClientCookies.service';
+import { RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Mail, Phone, User as UserIcon, Shield } from 'lucide-react';
-
-type Profile = {
-  fullName: string;
-  email: string;
-  phone: string;
-};
-
-type InfoFieldProps = {
-  label: string;
-  icon: React.ElementType;
-  value: string;
-};
-
-function InfoField({ label, icon: Icon, value }: InfoFieldProps) {
-  return (
-    <div className="space-y-1.5">
-      <p className="text-xs font-medium text-[color:var(--muted-foreground)]">{label}</p>
-      <div
-        className="flex items-center gap-2 rounded-md px-3 py-2 border"
-        style={{
-          background: 'color-mix(in srgb, var(--card) 92%, transparent)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        <Icon className="h-4 w-4 text-[color:var(--muted-foreground)]" />
-        <span className="text-sm" style={{ color: 'var(--card-foreground)' }}>
-          {value}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-type EditableFieldProps = {
-  label: string;
-  icon: React.ElementType;
-  value: string;
-  onChange: (val: string) => void;
-};
-
-function EditableField({ label, icon: Icon, value, onChange }: EditableFieldProps) {
-  return (
-    <div className="space-y-1.5">
-      <p className="text-xs font-medium text-[color:var(--muted-foreground)]">{label}</p>
-      <div
-        className="flex items-center gap-2 rounded-md px-3 py-2 border"
-        style={{
-          background: 'color-mix(in srgb, var(--card) 96%, transparent)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        <Icon className="h-4 w-4 text-[color:var(--muted-foreground)]" />
-        <input
-          className="w-full bg-transparent text-sm outline-none"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{
-            color: 'var(--card-foreground)',
-          }}
-          aria-label={label}
-        />
-      </div>
-    </div>
-  );
-}
-
-type ProfileInfoViewProps = {
-  profile: Profile;
-  onEdit: () => void;
-};
-
-function ProfileInfoView({ profile, onEdit }: ProfileInfoViewProps) {
-  return (
-    <>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
-          Profile Information
-        </h2>
-
-        <button
-          type="button"
-          onClick={onEdit}
-          className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition"
-          style={{
-            border: '1px solid var(--border)',
-            background: 'color-mix(in srgb, var(--card) 100%, transparent)',
-            color: 'var(--card-foreground)',
-          }}
-          aria-label="Edit profile"
-        >
-          <Shield className="h-4 w-4" />
-          Edit
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        <InfoField label="Full Name" icon={UserIcon} value={profile.fullName} />
-        <InfoField label="Email" icon={Mail} value={profile.email} />
-        <InfoField label="Phone Number" icon={Phone} value={profile.phone} />
-
-        <div className="pt-2">
-          <p className="mb-2 text-xs font-medium text-[color:var(--muted-foreground)]">Security</p>
-          <button
-            type="button"
-            className="rounded-md px-3 py-2 text-xs font-medium transition"
-            style={{
-              border: '1px solid var(--border)',
-              background: 'color-mix(in srgb, var(--card) 100%, transparent)',
-              color: 'var(--card-foreground)',
-            }}
-          >
-            Change Password
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
-
-type ProfileInfoEditFormProps = {
-  draft: Profile;
-  setDraft: (p: Profile) => void;
-  onSave: () => void;
-  onCancel: () => void;
-  isSaving: boolean;
-};
-
-function ProfileInfoEditForm({
-  draft,
-  setDraft,
-  onSave,
-  onCancel,
-  isSaving,
-}: ProfileInfoEditFormProps) {
-  return (
-    <>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--card-foreground)' }}>
-          Edit Profile
-        </h2>
-      </div>
-
-      <div className="space-y-4">
-        <EditableField
-          label="Full Name"
-          icon={UserIcon}
-          value={draft.fullName}
-          onChange={(val) => setDraft({ ...draft, fullName: val })}
-        />
-        <EditableField
-          label="Email"
-          icon={Mail}
-          value={draft.email}
-          onChange={(val) => setDraft({ ...draft, email: val })}
-        />
-        <EditableField
-          label="Phone Number"
-          icon={Phone}
-          value={draft.phone}
-          onChange={(val) => setDraft({ ...draft, phone: val })}
-        />
-
-        <div className="flex items-center justify-end gap-2 pt-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md px-3 py-1.5 text-xs font-medium transition"
-            style={{
-              border: '1px solid var(--border)',
-              background: 'color-mix(in srgb, var(--card) 100%, transparent)',
-              color: 'var(--card-foreground)',
-            }}
-            disabled={isSaving}
-          >
-            Cancel
-          </button>
-
-          <button
-            type="button"
-            onClick={onSave}
-            className="rounded-md px-3 py-1.5 text-xs font-medium transition"
-            style={{
-              background: 'var(--main-color)',
-              color: 'rgb(0 0 0)',
-            }}
-            disabled={isSaving}
-            aria-busy={isSaving}
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </>
-  );
-}
+import { toast } from 'sonner';
 
 export default function ProfileInfoCard() {
-  const [profile, setProfile] = useState<Profile>({
-    fullName: 'Ahmed Al Mansoori',
-    email: 'ahmed.almansoori@example.com',
-    phone: '+971 50 123 4567',
-  });
+  const profile = useProfileStore((state) => state.profile);
+  const isEditing = useProfileStore((state) => state.isEditing);
+  const startEditing = useProfileStore((state) => state.startEditing);
+  const stopEditing = useProfileStore((state) => state.stopEditing);
+  const updateBasicInfo = useProfileStore((state) => state.updateBasicInfo);
+  const setProfileImage = useProfileStore((state) => state.setProfileImage);
+  const [loadingForgetPassword, setLoadingForgetPassword] = useState<boolean>(false);
 
-  const [draft, setDraft] = useState<Profile>(profile);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const lang = useRouteLang();
+  const router = useRouter();
 
-  const handleEdit = () => {
-    setDraft(profile);
-    setIsEditing(true);
+  if (!profile) {
+    return null;
+  }
+
+  const handleEdit = () => startEditing();
+  const handleCancel = () => stopEditing();
+
+  const handleUpdated = (updated: {
+    fullName: string;
+    phone?: string | null;
+    age?: number | null;
+    gender?: string | null;
+  }) => {
+    updateBasicInfo(updated);
+    stopEditing();
   };
 
-  const handleCancel = () => {
-    setDraft(profile);
-    setIsEditing(false);
+  const handleProfileImageChange = (url: string | null) => {
+    setProfileImage(url);
   };
 
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      // simulate async save (replace with real API call)
-      await new Promise((r) => setTimeout(r, 600));
-      setProfile(draft);
-      setIsEditing(false);
-    } finally {
-      setIsSaving(false);
+  const handleChangePassword = async () => {
+    toast.loading('Loading...');
+    setLoadingForgetPassword(true);
+    if (!profile.email) {
+      toast.error('No email found for this profile.');
+      return;
     }
+
+    const { ok, response } = await forgotPassword(profile.email);
+
+    if (!ok) {
+      toast.dismiss();
+      toast.error(response.errMsg || 'Something went wrong!');
+      setLoadingForgetPassword(false);
+      if (response.errMsg === 'Your OTP not expired yet') {
+        setCookie(RESET_EMAIL_COOKIE_KEY, profile.email, 1);
+        setLoadingForgetPassword(false);
+        router.push(`/${lang}/dashboard/profile/reset-password`);
+      }
+      return;
+    }
+
+    setCookie(RESET_EMAIL_COOKIE_KEY, profile.email, 1);
+    setLoadingForgetPassword(false);
+    toast.dismiss();
+    router.push(`/${lang}/dashboard/profile/reset-password`);
   };
 
   return (
@@ -241,16 +84,21 @@ export default function ProfileInfoCard() {
       }}
     >
       <div className="max-w-2xl mx-auto">
+        <ProfileImageSection profile={profile} onProfileImageChange={handleProfileImageChange} />
+
         {isEditing ? (
           <ProfileInfoEditForm
-            draft={draft}
-            setDraft={setDraft}
-            onSave={handleSave}
+            profile={profile}
             onCancel={handleCancel}
-            isSaving={isSaving}
+            onUpdated={handleUpdated}
           />
         ) : (
-          <ProfileInfoView profile={profile} onEdit={handleEdit} />
+          <ProfileInfoView
+            loadingForgetPassword={loadingForgetPassword}
+            profile={profile}
+            onEdit={handleEdit}
+            onChangePassword={handleChangePassword}
+          />
         )}
       </div>
     </section>

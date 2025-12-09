@@ -3,51 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Calendar, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import type { HistoryItem, JobType, JobStatus } from '@/types/history';
 
-type JobType = 'remove-bg' | 'generate-bg' | 'generate-3d';
-type JobStatus = 'done' | 'processing' | 'failed';
-
-type HistoryItem = {
-  id: string;
-  type: JobType;
-  status: JobStatus;
-  createdAt: string;
-  imageSrc?: string;
-  inputNotes?: string;
-  resultNotes?: string;
-  variationCount?: number;
+type Props = {
+  initialItems: HistoryItem[];
 };
-
-const mockData: HistoryItem[] = [
-  {
-    id: 'job_01',
-    type: 'remove-bg',
-    status: 'done',
-    createdAt: new Date().toISOString(),
-    imageSrc: '/assets/home/product1.jpg',
-    inputNotes: 'Remove background, keep shadows',
-    resultNotes: 'Background removed, 1024x1024',
-  },
-  {
-    id: 'job_02',
-    type: 'generate-bg',
-    status: 'processing',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-    imageSrc: '/assets/home/product2.jpg',
-    inputNotes: 'Generate white studio background',
-    resultNotes: '',
-  },
-  {
-    id: 'job_03',
-    type: 'generate-3d',
-    status: 'done',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    imageSrc: '/assets/home/product3.jpg',
-    inputNotes: 'Create 3 positions (front/side/45deg). Keep texture.',
-    variationCount: 3,
-    resultNotes: '3D-generated renders available',
-  },
-];
 
 function prettyType(t: JobType) {
   switch (t) {
@@ -81,8 +41,8 @@ function StatusPill({ status }: { status: JobStatus }) {
   );
 }
 
-export default function HistoryList() {
-  const [items, setItems] = useState<HistoryItem[]>(mockData);
+export default function HistoryList({ initialItems }: Props) {
+  const [items] = useState<HistoryItem[]>(initialItems);
   const [selected, setSelected] = useState<HistoryItem | null>(null);
 
   return (

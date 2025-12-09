@@ -79,10 +79,7 @@ export function DashboardLayoutShell({ children }: DashboardLayoutShellProps) {
           setCollapsed={setCollapsed}
           onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         />
-        <section
-          className="flex-1 px-4 py-6 lg:px-8"
-          style={{ color: 'var(--foreground)' }}
-        >
+        <section className="flex-1 px-4 py-6 lg:px-8" style={{ color: 'var(--foreground)' }}>
           {children}
         </section>
       </div>

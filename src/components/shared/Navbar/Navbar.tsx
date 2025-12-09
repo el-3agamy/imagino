@@ -2,7 +2,7 @@
 
 import { useRouteLang } from '@/hooks/useLang';
 import { useAuthStore } from '@/store/authStore';
-import { Menu, X } from 'lucide-react';
+import { Menu, UserIcon, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,8 +19,34 @@ export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const lang = useRouteLang();
   const isAuth = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
 
   if (pathname.includes('/auth') || pathname.includes('/dashboard')) return null;
+
+  const avatarInitials = (() => {
+    const base =
+      user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : '') || '';
+
+    if (!base) return '';
+
+    return base
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('');
+  })();
+
+  const avatar = (
+    <Link
+      href={`/${lang}/dashboard/profile`}
+      className="flex items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 text-xs font-semibold text-neutral-800 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700 h-8 w-8"
+      aria-label="Profile"
+    >
+      {avatarInitials ? <span>{avatarInitials}</span> : <UserIcon className="h-4 w-4" />}
+    </Link>
+  );
 
   return (
     <>
@@ -76,12 +102,13 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
+              {isAuth && avatar}
             </div>
 
             <div className="flex items-center gap-2 md:hidden">
               <LangDropdown mobile />
               <ThemeDropdown mobile />
-
+              {isAuth && avatar}
               <button
                 aria-label="Toggle menu"
                 aria-expanded={isMobileOpen}

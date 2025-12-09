@@ -6,12 +6,21 @@ import {
   type AuthState,
   type User,
 } from '@/services/Auth.Server.service';
+<<<<<<< HEAD
 import { create } from 'zustand'
 
+=======
+import { getCookie } from '@/services/ClientCookies.service';
+import { getServerCookies } from '@/services/ServerCookies.service';
+import { ACCESS_TOKEN_COOKIE_KEY } from '@/utils/Cookies.keys';
+import { decodeJwtPayload } from '@/utils/JWT';
+import { create } from 'zustand';
+>>>>>>> a6eb158ed8e6cb87ae42d2c645651cd49fdcb9bc
 
 type AuthStoreState = AuthState & {
   loading: boolean;
   hydrated: boolean;
+  refreshAuth: () => void;
   hydrate: () => Promise<void>;
   setUser: (user: User | null | undefined) => void;
   setAuthenticated: (value: boolean) => void;
@@ -23,6 +32,20 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
   hydrated: false,
   isAuthenticated: false,
   user: undefined,
+
+  refreshAuth: async () => {
+    const token =
+      (await getServerCookies(ACCESS_TOKEN_COOKIE_KEY)) || getCookie(ACCESS_TOKEN_COOKIE_KEY);
+    set({ loading: true });
+
+    if (!token) {
+      set({ isAuthenticated: false, user: null, loading: false });
+      return;
+    }
+
+    const user = decodeJwtPayload<User>(token);
+    set({ isAuthenticated: true, user, loading: false });
+  },
 
   setUser: (user) => set({ user }),
   setAuthenticated: (value) => set({ isAuthenticated: value }),
@@ -42,6 +65,7 @@ export const useAuthStore = create<AuthStoreState>((set, get) => ({
       });
     } catch (error) {
       console.error('Auth hydrate error:', error);
+
       set({
         isAuthenticated: false,
         user: undefined,

@@ -3,13 +3,14 @@
 import { useRouteLang } from '@/hooks/useLang';
 import { resetPassword } from '@/services/Auth.service';
 import { getCookie, removeCookie } from '@/services/ClientCookies.service';
-import { RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
+import { getServerCookies } from '@/services/ServerCookies.service';
+import { ACCESS_TOKEN_COOKIE_KEY, RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface ResetPasswordValues {
   otp: string;
@@ -17,8 +18,9 @@ interface ResetPasswordValues {
   confirm: string;
 }
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
   const lang = useRouteLang();
+  const pathname = usePathname();
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +40,7 @@ export function ResetPasswordForm() {
   });
 
   const passwordValue = watch('password');
-  const email = getCookie(RESET_EMAIL_COOKIE_KEY);
+  const email = defEmail ? defEmail : getCookie(RESET_EMAIL_COOKIE_KEY);
 
   async function onSubmit(values: ResetPasswordValues) {
     if (!email) {
@@ -56,7 +58,8 @@ export function ResetPasswordForm() {
     if (!ok) return;
 
     removeCookie(RESET_EMAIL_COOKIE_KEY);
-    router.push(`/${lang}/auth/login`);
+    if (await getServerCookies(ACCESS_TOKEN_COOKIE_KEY)) router.push(`/${lang}/dashboard/profile`);
+    else router.push(`/${lang}/auth/login`);
   }
 
   return (
@@ -220,14 +223,16 @@ export function ResetPasswordForm() {
           </button>
         </div>
 
-        <div className="mt-4">
-          <Link
-            href={`/${lang}/auth/login`}
-            className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
-          >
-            Back to login
-          </Link>
-        </div>
+        {!pathname.includes('/dashboard') && (
+          <div className="mt-4">
+            <Link
+              href={`/${lang}/auth/login`}
+              className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
+            >
+              Back to login
+            </Link>
+          </div>
+        )}
       </form>
     </>
   );

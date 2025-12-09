@@ -1,15 +1,15 @@
 'use client';
 
 import { useRouteLang } from '@/hooks/useLang';
-import { Eye, EyeOff } from 'lucide-react';
+import { loginAction } from '@/services/Auth.Server.service';
+import { useAuthStore } from '@/store/authStore';
+import { handleApiResponse } from '@/utils/RequestHelpers';
+import { Eye, EyeOff, LoaderIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
-import { loginAction } from '@/services/Auth.Server.service';
-import { handleApiResponse } from '@/utils/RequestHelpers';
-import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 interface LoginFormValues {
   email: string;
@@ -45,9 +45,7 @@ export default function LoginForm() {
       });
 
       if (!ok) return;
-      const { hydrate } = useAuthStore.getState();
-
-      await hydrate();
+      useAuthStore.getState().refreshAuth();
       router.push(`/${lang}`);
     } catch (err) {
       const message =
@@ -59,7 +57,6 @@ export default function LoginForm() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 text-sm login-form">
         <header className="space-y-1 text-center">
           <h1 className="text-2xl font-semibold text-foreground dark:text-[color:var(--card-foreground)]">
@@ -169,7 +166,14 @@ export default function LoginForm() {
           className="submit-btn mt-1 h-11 w-full cursor-pointer rounded-md bg-main sm:text-lg font-semibold text-white transition shadow-sm hover:bg-main-hover
                      disabled:bg-[#E4E4E7] dark:disabled:bg-[color:var(--border)] disabled:text-[#A1A1AA] disabled:shadow-none disabled:cursor-not-allowed disabled:hover:bg-[#E4E4E7]"
         >
-          {isSubmitting ? 'Continuing…' : 'Continue'}
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              Login
+              <LoaderIcon />
+            </span>
+          ) : (
+            'Login'
+          )}
         </button>
 
         <Link

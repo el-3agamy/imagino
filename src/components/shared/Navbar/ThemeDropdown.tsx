@@ -41,14 +41,20 @@ export default function ThemeDropdown({ mobile = false }: { mobile?: boolean }) 
         }`}
         aria-label="Theme menu"
       >
-        {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        {theme === 'system' ? (
+          <Laptop className="h-4 w-4" />
+        ) : theme === 'dark' ? (
+          <Moon className="h-4 w-4" />
+        ) : (
+          <Sun className="h-4 w-4" />
+        )}
         {!mobile && <ChevronDown className="h-4 w-4" />}
       </button>
 
       {open && (
         <div
           className={`absolute ${
-            mobile ? 'top-full left-0 right-0' : 'right-0 mt-2'
+            mobile ? 'top-full mt-2 -left-15' : 'right-0 mt-2'
           } z-50 overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-xl min-w-[130px]`}
         >
           {options.map((opt) => (
