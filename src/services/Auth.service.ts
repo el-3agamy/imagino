@@ -2,7 +2,7 @@
 
 import { fetchApi, resShape } from '@/utils/fetchApi';
 import { handleApiResponse } from '@/utils/RequestHelpers';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export async function forgotPassword(email: string) {
   try {

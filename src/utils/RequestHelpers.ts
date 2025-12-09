@@ -1,4 +1,4 @@
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import type { resShape } from './fetchApi';
 
 function getMessageFromResponse(res?: resShape): string {

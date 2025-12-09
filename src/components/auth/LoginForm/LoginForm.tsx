@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface LoginFormValues {
   email: string;
@@ -57,7 +57,6 @@ export default function LoginForm() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 text-sm login-form">
         <header className="space-y-1 text-center">
           <h1 className="text-2xl font-semibold text-foreground dark:text-[color:var(--card-foreground)]">
