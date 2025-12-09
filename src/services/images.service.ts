@@ -53,20 +53,22 @@ type SuitableBackgroundApiResponse = {
 };
 
 
-export function mapApiToSuitableBackgroundHistoryItem(
+export async function mapApiToSuitableBackgroundHistoryItem(
     result: SuitableBackgroundApiResponse['result']
-): SuitableBackgroundHistoryItem {
+): Promise<SuitableBackgroundHistoryItem> {
     return {
         id: result?.backgroundImage?._id || '',
         type: 'suitable-bg',
         status: (result?.backgroundImage?.status as SuitableBackgroundJobStatus) || 'done',
         createdAt:
-            result?.backgroundImage?.aiEdits?.[0]?.timestamp || result?.backgroundImage?.createdAt || new Date().toISOString(),
+            result?.backgroundImage?.aiEdits?.[0]?.timestamp ||
+            result?.backgroundImage?.createdAt ||
+            new Date().toISOString(),
         imageSrc: result?.backgroundImage?.url || '',
         sourceImageSrc: result?.sourceImage?.url || '',
-        // Add more fields if needed
     };
 }
+
 
 
 export async function mapApiToRemoveBgHistoryItem(
@@ -116,27 +118,32 @@ export async function getImageWithoutBackground(
     return mapApiToRemoveBgHistoryItem(json.result);
 }
 
-export async function genSuitableBackground(
-    formData: FormData
+export async function genSuitableBackgroundById(
+    imageId: string
 ): Promise<SuitableBackgroundHistoryItem> {
     const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
     const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}gen-suitable-background`;
+
     const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
+            'Content-Type': 'application/json',
             Accept: 'application/json',
             Authorization: `hamada ${token || ''}`,
         },
-        body: formData,
+        body: JSON.stringify({ imageId }),
     });
+
     if (!response.ok) {
         const text = await response.text();
         throw new Error(`Server returned ${response.status}: ${text}`);
     }
+
     const json: SuitableBackgroundApiResponse = await response.json();
     if (!json.result) {
         throw new Error('No result returned from suitable-background API');
     }
+
     return mapApiToSuitableBackgroundHistoryItem(json.result);
 }
 

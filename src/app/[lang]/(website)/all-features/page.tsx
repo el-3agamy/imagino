@@ -22,7 +22,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { getImageWithoutBackground } from "@/services/images.service";
+import {  genSuitableBackgroundById, getImageWithoutBackground } from "@/services/images.service";
+import { SuitableBackgroundHistoryItem } from "@/types/suitableBgHistory";
 
 /**
  * AllFeatures - One-page features UI for Product Photo Editor
@@ -42,6 +43,9 @@ export default function AllFeatures() {
     const [preview, setPreview] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
     const [history, setHistory] = useState<string[]>([]);
+    const [historySuitableBg, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
+
+    const [ImageId, setImageId] = useState<string | null>(null);
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [provider, setProvider] = useState<"cloudinary" | "replicate" | "fal" | "local">("cloudinary");
 
@@ -75,6 +79,7 @@ export default function AllFeatures() {
 
             setPreview(imageUrl);
             setHistory((key) => [imageUrl, ...key].slice(0, 20));
+            setImageId(result.id);
         } catch (err) {
             console.error(err);
             alert("Error removing background — check console.");
@@ -83,28 +88,33 @@ export default function AllFeatures() {
         }
     }
 
-    async function applyTemplate(templateId: string) {
-        if (!preview) return;
-        setProcessing(true);
-        try {
-            const res = await fetch("/api/apply-template", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: preview, templateId, provider }),
-            });
-            if (!res.ok) throw new Error("template failed");
-            const json = await res.json();
-            if (json?.result_url) {
-                setPreview(json.result_url);
-                setHistory((h) => [json.result_url, ...h].slice(0, 20));
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Error applying template — check console.");
-        } finally {
-            setProcessing(false);
-        }
-    }
+   async function generateSuitableBg() {
+  if (!ImageId) {
+    alert("No image available to generate background");
+    return;
+  }
+  setProcessing(true);
+
+  try {
+    const fd = new FormData();
+    fd.append("imageId", ImageId);
+
+    const result = await genSuitableBackgroundById(ImageId); 
+    const imageUrl = result.imageSrc;
+    if (!imageUrl) throw new Error("No image returned from suitable-background");
+
+    setPreview(imageUrl);
+    setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
+  } catch (err) {
+    console.error(err);
+    alert("Error generating suitable background — check console.");
+  } finally {
+    setProcessing(false);
+  }
+}
+
+
+
 
     async function downloadImage() {
         if (!preview) return;
@@ -117,7 +127,7 @@ export default function AllFeatures() {
     }
 
     return (
-        <main className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 p-8">
+        <main className="min-h-screen bg-gradient from-white to-slate-50 text-slate-900 p-8">
             <header className="max-w-6xl mx-auto mb-8">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -162,11 +172,11 @@ export default function AllFeatures() {
                                         <Layers className="w-4 h-4 mr-2" /> Remove BG
                                     </Button>
 
-                                    <Button onClick={() => applyTemplate("studio-light")} disabled={!preview || processing} className="rounded-2xl">
-                                        <Wand2 className="w-4 h-4 mr-2" /> Apply Template
+                                    <Button onClick={() => generateSuitableBg()} disabled={!preview || processing} className="rounded-2xl">
+                                        <Wand2 className="w-4 h-4 mr-2" />Apply Suitable BG
                                     </Button>
 
-                                    <Button onClick={() => applyTemplate("shadow-soft")} disabled={!preview || processing} className="rounded-2xl">
+                                    <Button onClick={() => ("shadow-soft")} disabled={!preview || processing} className="rounded-2xl">
                                         <Expand className="w-4 h-4 mr-2" /> Add Shadow
                                     </Button>
 
@@ -214,7 +224,7 @@ export default function AllFeatures() {
                             </div>
 
                             <div className="mt-3 flex gap-2">
-                                <Button onClick={() => selectedTemplate && applyTemplate(selectedTemplate)} disabled={!selectedTemplate || !preview} className="rounded-2xl">
+                                <Button onClick={() => selectedTemplate && (selectedTemplate)} disabled={!selectedTemplate || !preview} className="rounded-2xl">
                                     Apply selected
                                 </Button>
                                 <Button variant="ghost" onClick={() => setSelectedTemplate(null)} className="rounded-2xl">
