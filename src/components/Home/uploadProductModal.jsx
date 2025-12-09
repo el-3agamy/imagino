@@ -6,7 +6,6 @@ import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
-import { removeBackground, RemoveBackgroundError } from '@/lib/removeBackground';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);
@@ -18,44 +17,32 @@ function UploadProductModal({ onClose }) {
   const router = useRouter();
   const params = useParams();
 
-  const uploadImageWithoutBackground = useCallback(
-    async (imageFile) => {
-      setError(null);
-      setIsProcessing(true);
-      setPreview(null);
-      setProductName('');
-      setProcessedAsset(null);
+  const uploadImageWithoutBackground = useCallback(async (imageFile) => {
+    setError(null);
+    setIsProcessing(true);
+    setPreview(null);
+    setProductName('');
+    setProcessedAsset(null);
 
-      try {
-        const result = await removeBackground({ imageFile });
+    try {
+      const result = await removeBackground({ imageFile });
 
-        setPreview(result.url);
-        if (result.filename) {
-          setProductName(result.filename);
-        }
-        if (result.id) {
-          setProcessedAsset({
-            id: result.id,
-            url: result.url,
-            filename: result.filename || '',
-          });
-        }
-      } catch (err) {
-        if (err instanceof RemoveBackgroundError && err.status === 401) {
-          const message = 'You must be logged in to process images.';
-          setError(message);
-          toast.error('Please log in to continue.');
-          return;
-        }
-        const message = err instanceof Error ? err.message : 'Unexpected error occurred';
-        setError(message);
-        toast.error(message);
-      } finally {
-        setIsProcessing(false);
+      setPreview(result.url);
+      if (result.filename) {
+        setProductName(result.filename);
       }
-    },
-    []
-  );
+      if (result.id) {
+        setProcessedAsset({
+          id: result.id,
+          url: result.url,
+          filename: result.filename || '',
+        });
+      }
+    } catch (err) {
+    } finally {
+      setIsProcessing(false);
+    }
+  }, []);
 
   const handleFiles = useCallback(
     async (files) => {
@@ -105,8 +92,8 @@ function UploadProductModal({ onClose }) {
     const lang = Array.isArray(langParam)
       ? langParam[0]
       : typeof langParam === 'string'
-        ? langParam
-        : 'en';
+      ? langParam
+      : 'en';
 
     const queryString = new URLSearchParams({ assetId: processedAsset.id });
     router.push(`/${lang}/all-features?${queryString.toString()}`);
@@ -175,8 +162,6 @@ function UploadProductModal({ onClose }) {
 
         {/* Right: controls */}
         <aside className="flex w-full flex-col gap-4 border-t border-border px-4 py-6 sm:w-80 sm:border-l sm:border-t-0 sm:px-6 sm:py-8">
-          
-
           <div className="mt-2 flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Product Name
@@ -190,9 +175,7 @@ function UploadProductModal({ onClose }) {
             />
           </div>
 
-          {error ? (
-            <p className="text-sm text-red-500">{error}</p>
-          ) : null}
+          {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
           <button
             type="button"
