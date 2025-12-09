@@ -12,3 +12,4 @@ export type HistoryItem = {
   resultNotes?: string;
   variationCount?: number;
 };
+

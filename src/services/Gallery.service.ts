@@ -5,6 +5,7 @@ import { getServerCookies } from '@/services/ServerCookies.service';
 import { ACCESS_TOKEN_COOKIE_KEY } from '@/utils/Cookies.keys';
 import type { HistoryItem, JobType, JobStatus } from '@/types/history';
 
+
 type ApiGalleryItem = {
   _id: string;
   imageUrl: string;
