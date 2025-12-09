@@ -7,7 +7,7 @@ import { RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface VerifyEmailValues {
   firstOtp: string;
