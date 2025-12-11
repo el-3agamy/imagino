@@ -6,6 +6,7 @@ import {
   Download,
   Expand,
   ImageIcon,
+  Loader2,
   Layers,
   Sliders,
   Sparkles,
@@ -17,6 +18,7 @@ import React, { useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
 import { fetchApi, resShape } from '@/utils/fetchApi';
 import Image from 'next/image';
 
@@ -29,6 +31,8 @@ export default function AllFeatures() {
   const [provider, setProvider] = useState<'cloudinary' | 'replicate' | 'fal' | 'local'>(
     'cloudinary'
   );
+  const [showRotate, setShowRotate] = useState(false);
+  const [angle, setAngle] = useState<string>('');
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -105,6 +109,60 @@ export default function AllFeatures() {
     a.remove();
   }
 
+  async function autoEnhance() {
+    if (!file) return;
+    setProcessing(true);
+
+    try {
+      const res = await inhanceImageQuality(file);
+      const enhancedUrl = res?.result?.enhanced?.url;
+
+      if (enhancedUrl) {
+        setPreview(enhancedUrl);
+        setHistory((h) => [enhancedUrl, ...h].slice(0, 20));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error enhancing image — please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function rotateImage() {
+    if (!file) {
+      alert('Please upload an image first.');
+      return;
+    }
+
+    if (angle === '') {
+      alert('Angle is required.');
+      return;
+    }
+
+    const parsedAngle = Number(angle);
+    if (!Number.isFinite(parsedAngle) || parsedAngle < 0 || parsedAngle > 360) {
+      alert('Angle must be between 0 and 360.');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const res = await genImageWithNewDimension(file, parsedAngle);
+      const rotatedUrl = res?.result?.enhanced?.url;
+      console.log(res, '👉', rotatedUrl);
+      if (rotatedUrl) {
+        setPreview(rotatedUrl);
+        setHistory((h) => [rotatedUrl, ...h].slice(0, 20));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error rotating image — please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 p-8">
       <header className="max-w-6xl mx-auto mb-8">
@@ -177,12 +235,59 @@ export default function AllFeatures() {
                   </Button>
 
                   <Button
-                    onClick={() => alert('Auto-enhance (stub)')}
+                    onClick={() => alert('Resize (stub)')}
+                    disabled={!preview || processing}
+                    className="rounded-2xl"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" /> Change Style
+                  </Button>
+
+                  <Button
+                    onClick={autoEnhance}
                     disabled={!preview || processing}
                     className="rounded-2xl"
                   >
                     <Sparkles className="w-4 h-4 mr-2" /> Auto Enhance
                   </Button>
+                </div>
+
+                <div className="mt-2 space-y-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRotate((prev) => !prev)}
+                    className="w-full rounded-2xl"
+                  >
+                    Rotate (angle)
+                  </Button>
+
+                  {showRotate && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-3 flex flex-col gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        max={360}
+                        value={angle}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            setAngle('');
+                            return;
+                          }
+                          const clamped = Math.min(360, Math.max(0, Number(val)));
+                          setAngle(String(clamped));
+                        }}
+                        placeholder="Engter angle"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200"
+                      />
+                      <Button
+                        onClick={rotateImage}
+                        disabled={processing || angle === ''}
+                        className="rounded-2xl"
+                      >
+                        <Loader2 className="w-4 h-4 mr-2" /> Rotate
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-2 justify-between">
@@ -257,7 +362,14 @@ export default function AllFeatures() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-2xl p-6 shadow flex flex-col gap-4">
-                <div className="w-full h-[520px] rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-[520px] rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
+                  {processing && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+                      <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
+                        <Loader2 className="h-4 w-4 animate-spin" /> This may take a moment...
+                      </div>
+                    </div>
+                  )}
                   {preview ? (
                     <motion.img
                       key={preview}
