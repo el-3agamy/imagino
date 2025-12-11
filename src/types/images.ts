@@ -115,3 +115,28 @@ export type BlurredImageResponse = {
   status: number;
   result: BlurredImageResult;
 };
+
+// & Generate Image with New Background
+export type NewBackgroundImageResult = {
+  transparentImage: ImageDocument;
+  generatedImage: ImageDocument;
+};
+
+export type NewBackgroundImageResponse = {
+  message: string;
+  status: number;
+  result: NewBackgroundImageResult;
+};
+
+// & Generate Image with Selected Background
+export type SelectedBackgroundImageResult = {
+  transparentImage: ImageDocument;
+  generatedImage: ImageDocument;
+  backgroundImage?: ImageDocument;
+};
+
+export type SelectedBackgroundImageResponse = {
+  message: string;
+  status: number;
+  result: SelectedBackgroundImageResult;
+};
