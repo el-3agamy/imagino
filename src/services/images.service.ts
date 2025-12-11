@@ -7,34 +7,30 @@ import { RemoveBgJobStatus, RemoveBgJobType } from "@/types/removeBgHistory";
 
 import type { SuitableBackgroundHistoryItem, SuitableBackgroundJobStatus } from '@/types/suitableBgHistory';
 import { ChangeStyleHistoryItem } from '@/types/changeStyleAnimeHistory';
+import { ExtractTextHistoryItem } from '@/types/extractTextFromBgHistory';
+import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 console.log(baseUrl);
 
-export type UploadImageNoBgResponse = {
-    message: string;
-    status: number;
-    result: {
-        original: {
-            _id: string;
-            url: string;
-            storageKey: string;
-            createdAt: string;
-            status: string;
-            aiEdits: any[];
-        };
-        enhanced: {
-            _id: string;
-            url: string;
-            storageKey: string;
-            createdAt: string;
-            status: string;
-            aiEdits: any[];
-        };
-    };
+type UploadImageNoBgResponse = {
+  message: string;
+  status: number;
+  result: {
+    _id: string;
+    url: string;
+    storageKey: string;
+    aiEdits?: {
+      operation: string;
+      provider: string;
+      timestamp: string;
+      processingTime: number;
+      cost: number;
+      _id: string;
+      id: string;
+    }[];
+  };
 };
-
-
 
 
 type SuitableBackgroundApiResponse = {
@@ -100,22 +96,52 @@ type ChangeImageStyleResponse = {
 };
 
 
-export async function mapApiToRemoveBgHistoryItem(
-    data: UploadImageNoBgResponse["result"]
-): Promise<RemoveBgHistoryItem> {
-    return {
-        id: data.enhanced._id,
-        type: "remove-bg",
-        status: data.enhanced.status as RemoveBgJobStatus,
-        createdAt: data.enhanced.createdAt,
-        imageSrc: data.enhanced.url,
-        originalImageSrc: data.original.url,
-        enhancedImageSrc: data.enhanced.url,
-        storageKey: data.enhanced.storageKey,
-        tags: data.enhanced.aiEdits?.map((edit: any) => edit.operation) ?? [],
-        provider: "cloudinary",
+type ExtractTextResponse = {
+  message: string;
+  status: number;
+  result: {
+    text: {
+      containsText: boolean;
+      extractedText: string;
     };
-}
+  };
+};
+
+
+export type RecognizeItemsResponse = {
+  message: string;
+  status: number;
+  result: {
+    text: {
+      items: {
+        item_name: string;
+        category: string;
+        count: number;
+        description: string;
+      }[];
+      total_items_detected: number;
+    };
+  };
+};
+
+
+
+export async function mapApiToRemoveBgHistoryItem(
+  data: UploadImageNoBgResponse["result"]
+): Promise<RemoveBgHistoryItem> {
+  return {
+    id: data._id,
+    type: "remove-bg",
+    status: "done",
+    createdAt: new Date().toISOString(),
+    imageSrc: data.url,
+    originalImageSrc: data.url,
+    enhancedImageSrc: data.url,
+    storageKey: data.storageKey,
+    tags: data.aiEdits?.map((edit) => edit.operation) ?? [],
+    provider: data.aiEdits?.[0]?.provider || "custom",
+  };
+};
 
 
 export async function mapApiToSuitableBackgroundHistoryItem(
@@ -153,50 +179,66 @@ export async function mapApiToChangeStyleHistoryItem(
 }
 
 
+export async function mapApiToExtractTextHistoryItem(
+  data: ExtractTextResponse["result"]
+): Promise<ExtractTextHistoryItem> {
+  return {
+    id: Date.now().toString(),
+    text: data.text.extractedText,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+export async function mapApiToRecognizeItemsHistoryItem(
+  data: RecognizeItemsResponse["result"]["text"]
+): Promise<RecognizeItemsHistoryItem> {
+  return {
+    id: new Date().getTime().toString(),
+    items: data.items,
+    totalItemsDetected: data.total_items_detected,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export async function getImageWithoutBackground(
-    formData: FormData
+  formData: FormData
 ): Promise<RemoveBgHistoryItem> {
-    const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
-    const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/gen-img-without-background`;
-    const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            Authorization: `hamada ${token || ""}`,
-        },
-        body: formData,
-    });
-    console.log("Remove-bg API response status:", response.status);
-    console.log("Remove-bg API response not Found:", response);
+  const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/gen-img-without-background`;
 
-    if (!response.ok) {
-        const text = await response.text();
-        console.error("Raw server response:", text);
-        return {
-            id: "",
-            type: "remove-bg",
-            status: "failed",
-            createdAt: new Date().toISOString(),
-            imageSrc: undefined,
-            originalImageSrc: undefined,
-            enhancedImageSrc: undefined,
-        };
-    }
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `hamada ${token || ""}`,
+    },
+    body: formData,
+  });
 
-    const json = await response.json();
-    console.log("Full remove-bg API response:", json);
+  console.log("Remove-bg API response status:", response.status);
 
-    if (!json.result) {
-        console.error("No result field in remove-bg API response", json);
-        throw new Error("No result returned from remove-bg API");
-    }
+  if (!response.ok) {
+    const text = await response.text();
+    console.error("Raw server response:", text);
+    return {
+      id: "",
+      type: "remove-bg",
+      status: "failed",
+      createdAt: new Date().toISOString(),
+      imageSrc: undefined,
+      originalImageSrc: undefined,
+      enhancedImageSrc: undefined,
+    };
+  }
 
-    const { original, enhanced } = json.result;
-    if (!enhanced?.url && !original?.url) {
-        console.error("No image URLs found in remove-bg API response", json);
-    }
+  const json: UploadImageNoBgResponse = await response.json();
+  console.log("Full remove-bg API response:", json);
 
-    return mapApiToRemoveBgHistoryItem(json.result);
+  if (!json.result) {
+    throw new Error("No result returned from remove-bg API");
+  }
+
+  return mapApiToRemoveBgHistoryItem(json.result);
 }
 
 export async function genSuitableBackgroundById(
@@ -268,8 +310,80 @@ export async function changeImageStyle(
 }
 
 
+export async function extractTextFromImage(
+    formData: FormData
+): Promise<ExtractTextHistoryItem> {
+    const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+    const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/extract-text-from-img`;
 
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            Authorization: `hamada ${token || ""}`,
+        },
+        body: formData,
+    });
 
+    console.log("Extract-text API Status:", response.status);
 
+    if (!response.ok) {
+        const text = await response.text();
+        console.error("Extract-text raw error:", text);
+
+        return {
+            id: "",
+            text: "",
+            createdAt: new Date().toISOString(),
+        };
+    }
+
+    const json: ExtractTextResponse = await response.json();
+    console.log("Extract-text API full response:", json);
+
+    if (!json.result?.text) {
+        throw new Error("No text returned from extract-text API");
+    }
+
+    return mapApiToExtractTextHistoryItem(json.result);
+}
+
+export async function recognizeItemsInImage(
+  formData: FormData
+): Promise<RecognizeItemsHistoryItem> {
+  const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/recognize-items-in-img`;
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            Authorization: `hamada ${token || ""}`,
+        },
+        body: formData,
+    });
+
+    console.log("Recognize Items API Status:", response.status);
+
+    if (!response.ok) {
+        const text = await response.text();
+        console.error("Recognize Items raw error:", text);
+
+        return {
+            id: "",
+            items: [],
+            totalItemsDetected: 0,
+            createdAt: new Date().toISOString(),
+        };
+    }
+
+    const json: RecognizeItemsResponse = await response.json();
+    console.log("Recognance Items API full ( fulld response:", json);
+
+    if (!json.result?.text?.items) {
+        throw new Error("No items returned from recognize-items API");
+    }
+
+    return mapApiToRecognizeItemsHistoryItem(json.result.text);
+}
 
 

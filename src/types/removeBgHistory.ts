@@ -1,5 +1,3 @@
-// src/types/removeBg.d.ts
-
 export type RemoveBgJobType = "remove-bg";
 export type RemoveBgJobStatus = "done" | "processing" | "failed";
 
@@ -13,7 +11,6 @@ export type RemoveBgHistoryItem = {
   originalImageSrc?: string;
   enhancedImageSrc?: string;
   storageKey?: string;
-  version?: number;
   tags?: string[];
   provider?: string;
 };

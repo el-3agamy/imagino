@@ -12,15 +12,17 @@ import {
     Trash2,
     Cpu,
     Image,
+    Scan,
 } from "lucide-react";
 
 // shadcn components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { changeImageStyle, genSuitableBackgroundById, getImageWithoutBackground } from "@/services/images.service";
+import { changeImageStyle, extractTextFromImage, genSuitableBackgroundById, getImageWithoutBackground, mapApiToExtractTextHistoryItem, recognizeItemsInImage } from "@/services/images.service";
 import { SuitableBackgroundHistoryItem } from "@/types/suitableBgHistory";
 import { ChangeStyleHistoryItem } from "@/types/changeStyleAnimeHistory";
+import { ExtractTextHistoryItem } from "@/types/extractTextFromBgHistory";
 
 export default function AllFeatures() {
     const [file, setFile] = useState<File | null>(null);
@@ -29,10 +31,15 @@ export default function AllFeatures() {
     const [history, setHistory] = useState<string[]>([]);
     const [historySuitableBg, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
     const [historyChangeStyle, setHistoryChangeStyle] = useState<ChangeStyleHistoryItem[]>([]);
-
+    const [historyExtractText, setHistoryExtractText] = useState<ExtractTextHistoryItem[]>([]);
+    const [recognizeItemsHistory, setRecognizeItemsHistory] = useState<any[]>([]);
     const [ImageId, setImageId] = useState<string | null>(null);
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+    const [extractedText, setExtractedText] = useState<string | null>(null);
+    const [recognizedItems, setRecognizedItems] = useState<any>(null);
+    const [showTextModal, setShowTextModal] = useState(false);
+
 
     const [provider, setProvider] = useState<"cloudinary" | "replicate" | "fal" | "local">("cloudinary");
 
@@ -115,6 +122,48 @@ export default function AllFeatures() {
         }
     }
 
+    async function callExtractText(file: File) {
+        setProcessing(true);
+
+        try {
+            const fd = new FormData();
+            fd.append("image", file);
+
+            // استدعاء الـ API
+            const result = await extractTextFromImage(fd);
+
+            // تحديث الـ state بناءً على النتيجة مباشرة
+            setExtractedText(result.text);
+            setHistoryExtractText((h) => [result, ...h].slice(0, 20));
+
+        } catch (err) {
+            console.error(err);
+            alert("Error extracting text — check console.");
+        } finally {
+            setProcessing(false);
+        }
+    }
+
+    async function callRecognizeItems() {
+        if (!file) return;
+        setProcessing(true);
+
+        try {
+            const fd = new FormData();
+            fd.append("image", file);
+
+            const result = await recognizeItemsInImage(fd);
+            console.log("Recognize-items result:", result);
+
+            setRecognizedItems(result);
+            setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
+        } catch (err) {
+            console.error(err);
+            alert("Error recognizing items — check console.");
+        } finally {
+            setProcessing(false);
+        }
+    }
 
 
     async function downloadImage() {
@@ -157,7 +206,6 @@ export default function AllFeatures() {
                                     </div>
                                 </div>
 
-                                {/* Quick Actions */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <Button onClick={callRemoveBg} disabled={!file || processing} className="rounded-2xl">
                                         <Layers className="w-4 h-4 mr-2" /> Remove BG
@@ -176,6 +224,23 @@ export default function AllFeatures() {
                                         <Sparkles className="w-5 h-5" />
                                         Change Style
                                     </Button>
+                                    <Button
+                                        onClick={() => callExtractText(file!)}
+                                        disabled={!file || processing}
+                                        className="rounded-2xl"
+                                    >
+                                        <Cpu className="w-4 h-4 mr-2" />
+                                        Extract Text
+                                    </Button>
+                                    <Button
+                                        onClick={callRecognizeItems}
+                                        disabled={!file || processing}
+                                        className="rounded-2xl"
+                                    >
+                                        <Scan className="w-4 h-4 mr-2" />
+                                        Recognize Items
+                                    </Button>
+
                                 </div>
 
                                 <div className="flex gap-2 justify-between mt-3">
@@ -248,6 +313,61 @@ export default function AllFeatures() {
                             </div>
                         </CardContent>
                     </Card>
+                    {(extractedText || (recognizedItems && recognizedItems.items.length > 0)) && (
+                        <Card className="rounded-2xl mt-4 p-4 shadow bg-white">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Image Analysis</CardTitle>
+                            </CardHeader>
+
+                            <CardContent>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {/* Preview Image */}
+                                    <div className="border rounded-xl p-4 flex items-center justify-center">
+                                        {preview ? (
+                                            <img
+                                                src={preview}
+                                                alt="preview"
+                                                className="max-h-[350px] object-contain rounded-xl"
+                                            />
+                                        ) : (
+                                            <p className="text-slate-400 text-sm">No image available</p>
+                                        )}
+                                    </div>
+
+                                    {/* Extracted Text & Recognized Items */}
+                                    <div className="border rounded-xl p-4 bg-slate-50 max-h-[350px] overflow-auto whitespace-pre-wrap">
+                                        {/* Extracted Text */}
+                                        {extractedText && (
+                                            <div className="mb-4">
+                                                <p className="font-semibold mb-1">Extracted Text:</p>
+                                                <p>{extractedText}</p>
+                                            </div>
+                                        )}
+
+                                        {/* Recognized Items */}
+                                        {recognizedItems && recognizedItems.items.length > 0 && (
+                                            <div>
+                                                <p className="font-semibold mb-2">
+                                                    Recognized Items ({recognizedItems.totalItemsDetected}):
+                                                </p>
+                                                <ul className="list-disc list-inside space-y-1">
+                                                    {recognizedItems.items.map((item: any, idx: number) => (
+                                                        <li key={idx}>
+                                                            <span className="font-medium">{item.item_name}</span> - {item.category}{" "}
+                                                            (Count: {item.count})
+                                                            <p className="text-xs text-slate-500">{item.description}</p>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+
                 </motion.section>
             </section>
         </main>
