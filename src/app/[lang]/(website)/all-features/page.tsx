@@ -1,5 +1,4 @@
 'use client';
-
 import { motion } from 'framer-motion';
 import {
   Cpu,
@@ -8,18 +7,31 @@ import {
   ImageIcon,
   Loader2,
   Layers,
-  Sliders,
+  Wand2,
   Sparkles,
   Trash2,
-  Wand2,
+  Image as ImageIco,
+  Scan,
 } from 'lucide-react';
-import React, { useRef, useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
+import React, { useRef, useState } from 'react';
+// shadcn components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  changeImageStyle,
+  extractTextFromImage,
+  genSuitableBackgroundById,
+  getImageWithoutBackground,
+  recognizeItemsInImage,
+  // mapApiToExtractTextHistoryItem,
+} from '@/services/images.service';
+import { SuitableBackgroundHistoryItem } from '@/types/suitableBgHistory';
+import { ChangeStyleHistoryItem } from '@/types/changeStyleAnimeHistory';
+import { ExtractTextHistoryItem } from '@/types/extractTextFromBgHistory';
+// import { Badge } from '@/components/ui/badge';
+// import { fetchApi, resShape } from '@/utils/fetchApi';
 import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
-import { fetchApi, resShape } from '@/utils/fetchApi';
 import Image from 'next/image';
 
 export default function AllFeatures() {
@@ -28,52 +40,24 @@ export default function AllFeatures() {
   const [processing, setProcessing] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [showRotate, setShowRotate] = useState(false);
+  const [angle, setAngle] = useState<string>('');
+  const [historySuitableBg, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
+  const [historyChangeStyle, setHistoryChangeStyle] = useState<ChangeStyleHistoryItem[]>([]);
+  const [historyExtractText, setHistoryExtractText] = useState<ExtractTextHistoryItem[]>([]);
+  const [recognizeItemsHistory, setRecognizeItemsHistory] = useState<any[]>([]);
+  const [ImageId, setImageId] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
+  const [recognizedItems, setRecognizedItems] = useState<any>(null);
   const [provider, setProvider] = useState<'cloudinary' | 'replicate' | 'fal' | 'local'>(
     'cloudinary'
   );
-  const [showRotate, setShowRotate] = useState(false);
-  const [angle, setAngle] = useState<string>('');
-
   const inputRef = useRef<HTMLInputElement | null>(null);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-  }
 
   function clear() {
     setFile(null);
     setPreview(null);
-  }
-
-  async function callRemoveBg() {
-    if (!file) return;
-    setProcessing(true);
-
-    try {
-      const fd = new FormData();
-      fd.append('image', file);
-      fd.append('provider', provider);
-
-      const res = await fetchApi<resShape>('image/remove-bg', {
-        method: 'POST',
-        body: JSON.stringify(fd),
-      });
-      console.log(res);
-
-      // Expect { result_url }
-      //   if (res?.result_url) {
-      //     setPreview(json.result_url);
-      //     setHistory((h) => [json.result_url, ...h].slice(0, 20));
-      //   }
-    } catch (err) {
-      console.error(err);
-      alert('Error removing background — check console.');
-    } finally {
-      setProcessing(false);
-    }
   }
 
   async function applyTemplate(templateId: string) {
@@ -129,6 +113,13 @@ export default function AllFeatures() {
     }
   }
 
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+  }
+
   async function rotateImage() {
     if (!file) {
       alert('Please upload an image first.');
@@ -163,13 +154,118 @@ export default function AllFeatures() {
     }
   }
 
+  async function callRemoveBg() {
+    if (!file) return;
+    setProcessing(true);
+
+    try {
+      const fd = new FormData();
+      fd.append('imageFile', file);
+
+      const result = await getImageWithoutBackground(fd);
+
+      console.log('Remove-bg API result:', result);
+
+      const imageUrl = result.imageSrc || result.enhancedImageSrc || result.originalImageSrc;
+      console.log(imageUrl);
+
+      if (!imageUrl) {
+        console.error('No image returned from remove-bg. Full result:', result);
+        alert('No image returned from remove-bg. Check console for details.');
+        return;
+      }
+
+      setPreview(imageUrl);
+      setHistory((h) => [imageUrl, ...h].slice(0, 20));
+      setImageId(result.id);
+    } catch (err) {
+      console.error(err);
+      alert('Error removing background — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function generateSuitableBg() {
+    if (!ImageId) return alert('No image available to generate background');
+    setProcessing(true);
+    try {
+      const result = await genSuitableBackgroundById(ImageId);
+      if (!result.imageSrc) throw new Error('No image returned from suitable-background');
+      setPreview(result.imageSrc);
+      setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
+    } catch (err) {
+      console.error(err);
+      alert('Error generating suitable background — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function callChangeStyle(file: File, style: string) {
+    setProcessing(true);
+    try {
+      const result = await changeImageStyle(file, style);
+      setPreview(result.enhancedImageSrc || '');
+      setHistoryChangeStyle((h) => [result, ...h].slice(0, 20));
+      setImageId(result.id);
+    } catch (err) {
+      console.error(err);
+      alert('Error changing style — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function callExtractText(file: File) {
+    setProcessing(true);
+
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+
+      // استدعاء الـ API
+      const result = await extractTextFromImage(fd);
+
+      // تحديث الـ state بناءً على النتيجة مباشرة
+      setExtractedText(result.text);
+      setHistoryExtractText((h) => [result, ...h].slice(0, 20));
+    } catch (err) {
+      console.error(err);
+      alert('Error extracting text — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function callRecognizeItems() {
+    if (!file) return;
+    setProcessing(true);
+
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+
+      const result = await recognizeItemsInImage(fd);
+      console.log('Recognize-items result:', result);
+
+      setRecognizedItems(result);
+      setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
+    } catch (err) {
+      console.error(err);
+      alert('Error recognizing items — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 text-slate-900 p-8">
+    <main className="min-h-screen bg-gradient from-white to-slate-50 text-slate-900 p-8">
       <header className="max-w-6xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white rounded-2xl shadow">
-              <ImageIcon className="w-7 h-7 text-slate-700" />
+              <ImageIco className="w-7 h-7 text-slate-700" />
             </div>
             <div>
               <h1 className="text-2xl font-semibold">Pebblely — All Features</h1>
@@ -179,7 +275,6 @@ export default function AllFeatures() {
       </header>
 
       <section className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: Upload + tools */}
         <motion.aside
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -219,11 +314,11 @@ export default function AllFeatures() {
                   </Button>
 
                   <Button
-                    onClick={() => applyTemplate('studio-light')}
+                    onClick={generateSuitableBg}
                     disabled={!preview || processing}
                     className="rounded-2xl"
                   >
-                    <Wand2 className="w-4 h-4 mr-2" /> Apply Template
+                    <Wand2 className="w-4 h-4 mr-2" /> Apply Suitable BG
                   </Button>
 
                   <Button
@@ -235,11 +330,12 @@ export default function AllFeatures() {
                   </Button>
 
                   <Button
-                    onClick={() => alert('Resize (stub)')}
-                    disabled={!preview || processing}
-                    className="rounded-2xl"
+                    onClick={() => callChangeStyle(file!, selectedStyle!)}
+                    disabled={!preview || processing || !selectedStyle}
+                    className="rounded-2xl flex items-center gap-2"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" /> Change Style
+                    <Sparkles className="w-5 h-5" />
+                    Change Style
                   </Button>
 
                   <Button
@@ -249,7 +345,26 @@ export default function AllFeatures() {
                   >
                     <Sparkles className="w-4 h-4 mr-2" /> Auto Enhance
                   </Button>
+
+                  <Button
+                    onClick={() => callExtractText(file!)}
+                    disabled={!file || processing}
+                    className="rounded-2xl"
+                  >
+                    <Cpu className="w-4 h-4 mr-2" />
+                    Extract Text
+                  </Button>
+
+                  <Button
+                    onClick={callRecognizeItems}
+                    disabled={!file || processing}
+                    className="rounded-2xl"
+                  >
+                    <Scan className="w-4 h-4 mr-2" />
+                    Recognize Items
+                  </Button>
                 </div>
+                {/* Head */}
 
                 <div className="mt-2 space-y-2">
                   <Button
@@ -307,50 +422,29 @@ export default function AllFeatures() {
             </CardContent>
           </Card>
 
+          {/* Style Selection Card */}
           <Card className="mt-4 rounded-2xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">Templates</CardTitle>
+              <CardTitle>Select Style</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-3">
-                {['studio-light', 'studio-dark', 'outdoor'].map((t) => (
-                  <motion.button
-                    key={t}
-                    onClick={() => setSelectedTemplate(t)}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`rounded-2xl p-3 border ${
-                      selectedTemplate === t ? 'border-sky-500' : 'border-slate-100'
-                    } bg-white shadow`}
+                {['anime', 'cartoon', 'pixar', 'watercolor', 'oil', 'pencil'].map((style) => (
+                  <Button
+                    key={style}
+                    variant={selectedStyle === style ? 'default' : 'outline'}
+                    className="rounded-2xl"
+                    onClick={() => setSelectedStyle(style)}
                   >
-                    <div className="h-20 w-full rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 flex items-end p-2">
-                      <span className="text-xs">{t}</span>
-                    </div>
-                  </motion.button>
+                    {style}
+                  </Button>
                 ))}
-              </div>
-
-              <div className="mt-3 flex gap-2">
-                <Button
-                  onClick={() => selectedTemplate && applyTemplate(selectedTemplate)}
-                  disabled={!selectedTemplate || !preview}
-                  className="rounded-2xl"
-                >
-                  Apply selected
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedTemplate(null)}
-                  className="rounded-2xl"
-                >
-                  Clear
-                </Button>
               </div>
             </CardContent>
           </Card>
         </motion.aside>
 
-        {/* Middle column: Preview */}
+        {/* Middle column: Preview 1 */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -358,18 +452,11 @@ export default function AllFeatures() {
         >
           <Card className="rounded-2xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">Editor Preview</CardTitle>
+              <CardTitle>Editor Preview</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-2xl p-6 shadow flex flex-col gap-4">
-                <div className="relative w-full h-[520px] rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
-                  {processing && (
-                    <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
-                      <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
-                        <Loader2 className="h-4 w-4 animate-spin" /> This may take a moment...
-                      </div>
-                    </div>
-                  )}
+                <div className="w-full h-[520px] rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
                   {preview ? (
                     <motion.img
                       key={preview}
@@ -392,93 +479,64 @@ export default function AllFeatures() {
                     </div>
                   )}
                 </div>
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <Badge className="px-3 py-1">Preview</Badge>
-                    <div className="text-sm text-slate-500">{file ? file.name : '—'}</div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-slate-400">
-                      Processing: {processing ? 'Yes' : 'No'}
-                    </div>
-                    <Button onClick={() => alert('Open advanced editor (stub)')}>Advanced</Button>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
-
-          <motion.div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="rounded-2xl">
+          {(extractedText || (recognizedItems && recognizedItems.items.length > 0)) && (
+            <Card className="rounded-2xl mt-4 p-4 shadow bg-white">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">Enhancer & Upscale</CardTitle>
+                <CardTitle className="text-lg font-semibold">Image Analysis</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex gap-3 flex-wrap">
-                  <Button onClick={() => alert('Upscale x2 (stub)')} className="rounded-2xl">
-                    <Cpu className="w-4 h-4 mr-2" /> Upscale x2
-                  </Button>
-                  <Button onClick={() => alert('Enhance colors (stub)')} className="rounded-2xl">
-                    <Sliders className="w-4 h-4 mr-2" /> Enhance
-                  </Button>
-                  <Button onClick={() => alert('Remove noise (stub)')} className="rounded-2xl">
-                    <Sparkles className="w-4 h-4 mr-2" /> Denoise
-                  </Button>
-                </div>
 
-                <p className="mt-3 text-sm text-slate-500">
-                  These actions call the provider to run image transforms. Implement server routes
-                  that translate these actions to Cloudinary / Replicate / Fal.ai calls.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">Export & History</CardTitle>
-              </CardHeader>
               <CardContent>
-                <div className="flex flex-col gap-3">
-                  <div className="flex gap-2 overflow-x-auto">
-                    {history.length === 0 ? (
-                      <div className="text-sm text-slate-400">No history yet</div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Preview Image */}
+                  <div className="border rounded-xl p-4 flex items-center justify-center">
+                    {preview ? (
+                      <Image
+                        src={preview}
+                        alt="preview"
+                        className="max-h-[350px] object-contain rounded-xl"
+                      />
                     ) : (
-                      history.map((h, i) => (
-                        <motion.div
-                          whileHover={{ scale: 1.03 }}
-                          key={h}
-                          className="w-28 h-20 rounded-2xl overflow-hidden bg-white shadow"
-                        >
-                          <Image
-                            width={200}
-                            height={200}
-                            src={h}
-                            className="w-full h-full object-cover"
-                            alt={`history-${i}`}
-                          />
-                        </motion.div>
-                      ))
+                      <p className="text-slate-400 text-sm">No image available</p>
                     )}
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button onClick={() => alert('Export zip (stub)')}>Export all</Button>
-                    <Button variant="outline" onClick={() => setHistory([])}>
-                      Clear history
-                    </Button>
+                  {/* Extracted Text & Recognized Items */}
+                  <div className="border rounded-xl p-4 bg-slate-50 max-h-[350px] overflow-auto whitespace-pre-wrap">
+                    {/* Extracted Text */}
+                    {extractedText && (
+                      <div className="mb-4">
+                        <p className="font-semibold mb-1">Extracted Text:</p>
+                        <p>{extractedText}</p>
+                      </div>
+                    )}
+
+                    {/* Recognized Items */}
+                    {recognizedItems && recognizedItems.items.length > 0 && (
+                      <div>
+                        <p className="font-semibold mb-2">
+                          Recognized Items ({recognizedItems.totalItemsDetected}):
+                        </p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {recognizedItems.items.map((item: any, idx: number) => (
+                            <li key={idx}>
+                              <span className="font-medium">{item.item_name}</span> -{' '}
+                              {item.category} (Count: {item.count})
+                              <p className="text-xs text-slate-500">{item.description}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          )}
         </motion.section>
       </section>
-
-      <footer className="max-w-6xl mx-auto mt-10 text-center text-xs text-slate-400">
-        Built with Tailwind + shadcn + Framer Motion · Light design · rounded-2xl
-      </footer>
-    </div>
+    </main>
   );
 }
