@@ -9,7 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
 interface ResetPasswordValues {
@@ -29,7 +29,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordValues>({
     defaultValues: {
@@ -39,7 +39,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
     },
   });
 
-  const passwordValue = watch('password');
+  const passwordValue = useWatch({ control, name: 'password' });
   const email = defEmail ? defEmail : getCookie(RESET_EMAIL_COOKIE_KEY);
 
   async function onSubmit(values: ResetPasswordValues) {
@@ -87,7 +87,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
               disabled
               className="h-11 w-full rounded-lg border px-3 text-sm
                        bg-[#F5F5F7] border-[#E4E4E7] text-foreground
-                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground"
+                       dark:bg-input dark:border-border dark:text-card-foreground"
             />
           </div>
 
@@ -107,7 +107,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
               className="h-11 w-full rounded-lg border px-3 text-sm tracking-[0.4em]
                        bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
                        focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
-                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
+                       dark:bg-input dark:border-border dark:text-card-foreground dark:placeholder:text-muted-foreground"
               aria-invalid={!!errors.otp || undefined}
               {...register('otp', {
                 required: 'Code is required',
@@ -137,7 +137,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
                 className="h-11 w-full rounded-lg border px-3 pr-10 text-sm
                          bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
                          focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
-                         dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
+                         dark:bg-input dark:border-border dark:text-card-foreground dark:placeholder:text-muted-foreground"
                 autoComplete="new-password"
                 aria-invalid={!!errors.password || undefined}
                 {...register('password', {
@@ -151,7 +151,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
-                className="absolute inset-y-0 right-2 flex items-center rounded-full p-1.5 text-muted-foreground hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6] dark:text-[color:var(--muted-foreground)]"
+                className="absolute inset-y-0 right-2 flex items-center rounded-full p-1.5 text-muted-foreground hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6] dark:text-muted-foreground"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
@@ -161,7 +161,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
                 )}
               </button>
             </div>
-            <p className="text-[11px] text-muted-foreground dark:text-[color:var(--muted-foreground)]">
+            <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
               Must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number
             </p>
             {errors.password && (
@@ -186,7 +186,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
                 className="h-11 w-full rounded-lg border px-3 pr-10 text-sm
                          bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
                          focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
-                         dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
+                         dark:bg-input dark:border-border dark:text-card-foreground dark:placeholder:text-muted-foreground"
                 autoComplete="new-password"
                 aria-invalid={!!errors.confirm || undefined}
                 {...register('confirm', {
@@ -197,7 +197,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
               <button
                 type="button"
                 onClick={() => setShowConfirm((p) => !p)}
-                className="absolute inset-y-0 right-2 flex items-center rounded-full p-1.5 text-muted-foreground hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6] dark:text-[color:var(--muted-foreground)]"
+                className="absolute inset-y-0 right-2 flex items-center rounded-full p-1.5 text-muted-foreground hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6] dark:text-muted-foreground"
                 aria-label={showConfirm ? 'Hide password' : 'Show password'}
               >
                 {showConfirm ? (
@@ -227,7 +227,7 @@ export function ResetPasswordForm({ defEmail }: { defEmail?: string }) {
           <div className="mt-4">
             <Link
               href={`/${lang}/auth/login`}
-              className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
+              className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-card dark:border-border dark:text-card-foreground dark:hover:bg-card"
             >
               Back to login
             </Link>

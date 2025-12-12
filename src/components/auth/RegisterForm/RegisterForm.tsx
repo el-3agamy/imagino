@@ -3,7 +3,7 @@
 import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function RegisterForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     defaultValues: {
@@ -42,7 +42,7 @@ export default function RegisterForm() {
     },
   });
 
-  const passwordValue = watch('password');
+  const passwordValue = useWatch({ control, name: 'password' });
 
   async function onSubmit(values: RegisterFormValues) {
     try {
@@ -74,10 +74,10 @@ export default function RegisterForm() {
       <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 register-form">
         <header className="space-y-1 text-center">
-          <h1 className="text-xl font-semibold text-foreground sm:text-2xl dark:text-[color:var(--card-foreground)]">
+          <h1 className="text-xl font-semibold text-foreground sm:text-2xl dark:text-card-foreground">
             Create Account
           </h1>
-          <p className="text-xs text-muted-foreground sm:text-sm dark:text-[color:var(--muted-foreground)]">
+          <p className="text-xs text-muted-foreground sm:text-sm dark:text-muted-foreground">
             Fill in your details to get started
           </p>
         </header>
@@ -119,7 +119,7 @@ export default function RegisterForm() {
         <div className="space-y-1.5">
           <label
             htmlFor="register-password"
-            className="text-xs font-medium text-foreground dark:text-[color:var(--card-foreground)]"
+            className="text-xs font-medium text-foreground dark:text-card-foreground"
           >
             Password
           </label>
@@ -129,10 +129,10 @@ export default function RegisterForm() {
               id="register-password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Min 8 characters"
-              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-[color:var(--border)]
-                         bg-[#F5F5F7] dark:bg-[color:var(--input)] px-3 pr-10 text-sm text-foreground
-                         dark:text-[color:var(--card-foreground)] placeholder:text-muted-foreground/70
-                         dark:placeholder:text-[color:var(--muted-foreground)] focus:outline-none
+              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-border
+                         bg-[#F5F5F7] dark:bg-input px-3 pr-10 text-sm text-foreground
+                         dark:text-card-foreground placeholder:text-muted-foreground/70
+                         dark:placeholder:text-muted-foreground focus:outline-none
                          focus:ring-2 focus:ring-main focus:border-transparent"
               autoComplete="new-password"
               aria-invalid={!!errors.password || undefined}
@@ -150,7 +150,7 @@ export default function RegisterForm() {
               className="absolute cursor-pointer inset-y-0 right-2 flex items-center rounded-full p-1.5
                          text-muted-foreground hover:bg-black/5 focus-visible:outline-none
                          focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6]
-                         dark:text-[color:var(--muted-foreground)]"
+                         dark:text-muted-foreground"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -161,7 +161,7 @@ export default function RegisterForm() {
             </button>
           </div>
 
-          <p className="text-[11px] text-muted-foreground dark:text-[color:var(--muted-foreground)]">
+          <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Must include 1 uppercase, 1 lowercase, and 1 number
           </p>
 
@@ -175,7 +175,7 @@ export default function RegisterForm() {
         <div className="space-y-1.5">
           <label
             htmlFor="register-confirm-password"
-            className="text-xs font-medium text-foreground dark:text-[color:var(--card-foreground)]"
+            className="text-xs font-medium text-foreground dark:text-card-foreground"
           >
             Re-enter Password
           </label>
@@ -185,10 +185,10 @@ export default function RegisterForm() {
               id="register-confirm-password"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Confirm your password"
-              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-[color:var(--border)]
-                         bg-[#F5F5F7] dark:bg-[color:var(--input)] px-3 pr-10 text-sm text-foreground
-                         dark:text-[color:var(--card-foreground)] placeholder:text-muted-foreground/70
-                         dark:placeholder:text-[color:var(--muted-foreground)] focus:outline-none
+              className="h-11 w-full rounded-lg border border-[#E4E4E7] dark:border-border
+                         bg-[#F5F5F7] dark:bg-input px-3 pr-10 text-sm text-foreground
+                         dark:text-card-foreground placeholder:text-muted-foreground/70
+                         dark:placeholder:text-muted-foreground focus:outline-none
                          focus:ring-2 focus:ring-main focus:border-transparent"
               autoComplete="new-password"
               aria-invalid={!!errors.confirmPassword || undefined}
@@ -203,7 +203,7 @@ export default function RegisterForm() {
               className="absolute cursor-pointer inset-y-0 right-2 flex items-center rounded-full p-1.5
                          text-muted-foreground hover:bg-black/5 focus-visible:outline-none
                          focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#8b5cf6]
-                         dark:text-[color:var(--muted-foreground)]"
+                         dark:text-muted-foreground"
               aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
             >
               {showConfirmPassword ? (
@@ -231,18 +231,18 @@ export default function RegisterForm() {
           {isSubmitting ? 'Signing up…' : 'Sign Up'}
         </button>
 
-        <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted-foreground dark:text-[color:var(--muted-foreground)]">
-          <span className="h-px flex-1 bg-[#E4E4E7] dark:bg-[color:var(--border)]" />
+        <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
+          <span className="h-px flex-1 bg-[#E4E4E7] dark:bg-border" />
           <span className="font-semibold tracking-wide">ALREADY HAVE AN ACCOUNT?</span>
-          <span className="h-px flex-1 bg-[#E4E4E7] dark:bg-[color:var(--border)]" />
+          <span className="h-px flex-1 bg-[#E4E4E7] dark:bg-border" />
         </div>
 
         <Link
           href={`/${lang}/auth/login`}
-          className="h-11 w-full rounded-full border border-[#E4E4E7] dark:border-[color:var(--border)]
-                     bg-white dark:bg-[color:var(--card)] text-center text-sm font-semibold
-                     text-foreground dark:text-[color:var(--card-foreground)]
-                     hover:bg-[#F5F5F7] dark:hover:bg-[color:var(--card)] transition inline-flex
+          className="h-11 w-full rounded-full border border-[#E4E4E7] dark:border-border
+                     bg-white dark:bg-card text-center text-sm font-semibold
+                     text-foreground dark:text-card-foreground
+                     hover:bg-[#F5F5F7] dark:hover:bg-card transition inline-flex
                      items-center justify-center"
         >
           Login

@@ -8,6 +8,7 @@ import type {
   EnhancedImageResponse,
   BlurredImageResponse,
   ImageResponse,
+  ImageDocument,
   NewAngleImageResponse,
   ResizedImageResponse,
   NewBackgroundImageResponse,
@@ -15,7 +16,6 @@ import type {
 } from '@/types/images';
 
 import { RemoveBgHistoryItem } from '@/types/removeBgHistory';
-import { RemoveBgJobStatus, RemoveBgJobType } from '@/types/removeBgHistory';
 
 import type {
   SuitableBackgroundHistoryItem,
@@ -24,8 +24,6 @@ import type {
 import { ChangeStyleHistoryItem } from '@/types/changeStyleAnimeHistory';
 import { ExtractTextHistoryItem } from '@/types/extractTextFromBgHistory';
 import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
-
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 const ENHANCE_ENDPOINT = 'image/gen-inhanced-quality-img';
 const NEW_DIMENSION_ENDPOINT = 'image/gen-img-with-new-dimension';
@@ -319,44 +317,6 @@ type SuitableBackgroundApiResponse = {
   };
 };
 
-type ChangeImageStyleResponse = {
-  message: string;
-  status: number;
-  result: {
-    original: {
-      _id: string;
-      url: string;
-      storageKey: string;
-      filename: string;
-      originalFilename: string;
-      mimeType: string;
-      size: number;
-      aiEdits: any[];
-      status: string;
-      tags: string[];
-      createdAt: string;
-      updatedAt: string;
-      id: string;
-    };
-    enhanced: {
-      _id: string;
-      url: string;
-      storageKey: string;
-      filename: string;
-      originalFilename: string;
-      mimeType: string;
-      size: number;
-      aiEdits: any[];
-      status: string;
-      tags: string[];
-      createdAt: string;
-      updatedAt: string;
-      id: string;
-      version?: number;
-    };
-  };
-};
-
 type ExtractTextResponse = {
   message: string;
   status: number;
@@ -418,14 +378,14 @@ export async function mapApiToSuitableBackgroundHistoryItem(
 }
 
 export async function mapApiToChangeStyleHistoryItem(data: {
-  original: any;
-  enhanced: any;
+  original: ImageDocument;
+  enhanced: ImageDocument;
 }): Promise<ChangeStyleHistoryItem> {
   return {
-    id: data.enhanced.id,
+    id: data.enhanced._id || (data.enhanced as unknown as { id?: string }).id || '',
     type: 'change-style',
     status: 'done',
-    createdAt: data.enhanced.createdAt,
+    createdAt: data.enhanced.createdAt || new Date().toISOString(),
     originalImageSrc: data.original.url,
     enhancedImageSrc: data.enhanced.url,
     storageKey: data.enhanced.storageKey,

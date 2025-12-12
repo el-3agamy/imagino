@@ -29,30 +29,29 @@ import {
 import { SuitableBackgroundHistoryItem } from '@/types/suitableBgHistory';
 import { ChangeStyleHistoryItem } from '@/types/changeStyleAnimeHistory';
 import { ExtractTextHistoryItem } from '@/types/extractTextFromBgHistory';
+import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
 // import { Badge } from '@/components/ui/badge';
 // import { fetchApi, resShape } from '@/utils/fetchApi';
 import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
 import Image from 'next/image';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function AllFeatures() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [, setHistory] = useState<string[]>([]);
   const [showRotate, setShowRotate] = useState(false);
   const [angle, setAngle] = useState<string>('');
-  const [historySuitableBg, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
-  const [historyChangeStyle, setHistoryChangeStyle] = useState<ChangeStyleHistoryItem[]>([]);
-  const [historyExtractText, setHistoryExtractText] = useState<ExtractTextHistoryItem[]>([]);
-  const [recognizeItemsHistory, setRecognizeItemsHistory] = useState<any[]>([]);
+  const [, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
+  const [, setHistoryChangeStyle] = useState<ChangeStyleHistoryItem[]>([]);
+  const [, setHistoryExtractText] = useState<ExtractTextHistoryItem[]>([]);
+  const [, setRecognizeItemsHistory] = useState<RecognizeItemsHistoryItem[]>([]);
   const [ImageId, setImageId] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string | null>(null);
-  const [recognizedItems, setRecognizedItems] = useState<any>(null);
-  const [provider, setProvider] = useState<'cloudinary' | 'replicate' | 'fal' | 'local'>(
-    'cloudinary'
-  );
+  const [recognizedItems, setRecognizedItems] = useState<RecognizeItemsHistoryItem | null>(null);
+  const provider = 'cloudinary';
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   function clear() {
@@ -77,7 +76,7 @@ export default function AllFeatures() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error applying template — check console.');
+      toast.error('Error applying template — check console.');
     } finally {
       setProcessing(false);
     }
@@ -122,18 +121,18 @@ export default function AllFeatures() {
 
   async function rotateImage() {
     if (!file) {
-      alert('Please upload an image first.');
+      toast.error('Please upload an image first.');
       return;
     }
 
     if (angle === '') {
-      alert('Angle is required.');
+      toast.error('Angle is required.');
       return;
     }
 
     const parsedAngle = Number(angle);
     if (!Number.isFinite(parsedAngle) || parsedAngle < 0 || parsedAngle > 360) {
-      alert('Angle must be between 0 and 360.');
+      toast.error('Angle must be between 0 and 360.');
       return;
     }
 
@@ -148,7 +147,7 @@ export default function AllFeatures() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error rotating image — please try again.');
+      toast.error('Error rotating image — please try again.');
     } finally {
       setProcessing(false);
     }
@@ -171,7 +170,7 @@ export default function AllFeatures() {
 
       if (!imageUrl) {
         console.error('No image returned from remove-bg. Full result:', result);
-        alert('No image returned from remove-bg. Check console for details.');
+        toast.error('No image returned from remove-bg. Check console for details.');
         return;
       }
 
@@ -180,14 +179,14 @@ export default function AllFeatures() {
       setImageId(result.id);
     } catch (err) {
       console.error(err);
-      alert('Error removing background — check console.');
+      toast.error('Error removing background — check console.');
     } finally {
       setProcessing(false);
     }
   }
 
   async function generateSuitableBg() {
-    if (!ImageId) return alert('No image available to generate background');
+    if (!ImageId) return toast.error('No image available to generate background');
     setProcessing(true);
     try {
       const result = await genSuitableBackgroundById(ImageId);
@@ -196,7 +195,7 @@ export default function AllFeatures() {
       setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
     } catch (err) {
       console.error(err);
-      alert('Error generating suitable background — check console.');
+      toast.error('Error generating suitable background — check console.');
     } finally {
       setProcessing(false);
     }
@@ -211,7 +210,7 @@ export default function AllFeatures() {
       setImageId(result.id);
     } catch (err) {
       console.error(err);
-      alert('Error changing style — check console.');
+      toast.error('Error changing style — check console.');
     } finally {
       setProcessing(false);
     }
@@ -232,7 +231,7 @@ export default function AllFeatures() {
       setHistoryExtractText((h) => [result, ...h].slice(0, 20));
     } catch (err) {
       console.error(err);
-      alert('Error extracting text — check console.');
+      toast.error('Error extracting text — check console.');
     } finally {
       setProcessing(false);
     }
@@ -253,7 +252,7 @@ export default function AllFeatures() {
       setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
     } catch (err) {
       console.error(err);
-      alert('Error recognizing items — check console.');
+      toast.error('Error recognizing items — check console.');
     } finally {
       setProcessing(false);
     }
@@ -261,6 +260,7 @@ export default function AllFeatures() {
 
   return (
     <main className="min-h-screen bg-gradient from-white to-slate-50 text-slate-900 p-8">
+      <Toaster position="top-center" />
       <header className="max-w-6xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -456,7 +456,7 @@ export default function AllFeatures() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-2xl p-6 shadow flex flex-col gap-4">
-                <div className="w-full h-[520px] rounded-2xl border border-slate-100 bg-gradient-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
+                <div className="w-full h-[520px] rounded-2xl border border-slate-100 bg-linear-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
                   {preview ? (
                     <motion.img
                       key={preview}
@@ -520,13 +520,15 @@ export default function AllFeatures() {
                           Recognized Items ({recognizedItems.totalItemsDetected}):
                         </p>
                         <ul className="list-disc list-inside space-y-1">
-                          {recognizedItems.items.map((item: any, idx: number) => (
-                            <li key={idx}>
-                              <span className="font-medium">{item.item_name}</span> -{' '}
-                              {item.category} (Count: {item.count})
-                              <p className="text-xs text-slate-500">{item.description}</p>
-                            </li>
-                          ))}
+                          {recognizedItems.items.map(
+                            (item: RecognizeItemsHistoryItem['items'][number], idx: number) => (
+                              <li key={idx}>
+                                <span className="font-medium">{item.item_name}</span> -{' '}
+                                {item.category} (Count: {item.count})
+                                <p className="text-xs text-slate-500">{item.description}</p>
+                              </li>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}

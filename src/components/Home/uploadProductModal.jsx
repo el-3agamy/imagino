@@ -39,6 +39,8 @@ function UploadProductModal({ onClose }) {
         });
       }
     } catch (err) {
+      console.error('Failed to process image', err);
+      setError('Something went wrong while processing the image. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -143,7 +145,7 @@ function UploadProductModal({ onClose }) {
               </p>
             </div>
           ) : (
-            <div className="flex w-full max-w-3xl items-center justify-center bg-muted px-4 py-6 sm:px-8 sm:py-10 border border-2 rounded-[10px]">
+            <div className="flex w-full max-w-3xl items-center justify-center bg-muted px-4 py-6 sm:px-8 sm:py-10 border-2 rounded-[10px]">
               <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-[10px] bg-card">
                 <Image src={preview} alt="Preview" fill className="object-contain" />
               </div>

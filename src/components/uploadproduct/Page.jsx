@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
 
 function Page() {
-  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const inputRef = useRef(null);
 
@@ -12,7 +11,6 @@ function Page() {
     const imageFile = files?.[0];
     if (!imageFile) return;
 
-    setFile(imageFile);
     const url = URL.createObjectURL(imageFile);
     setPreview(url);
   }, []);
@@ -60,7 +58,7 @@ function Page() {
               onDrop={onDrop}
               onDragOver={onDragOver}
               onClick={onClickUpload}
-              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-[22rem] sm:max-w-lg"
+              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-88 sm:max-w-lg"
             >
               <div className="mb-4 text-3xl">🖼️</div>
               <p className="max-w-xs">
