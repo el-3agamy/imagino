@@ -28,7 +28,7 @@ import {
 } from '@/services/images.service';
 import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
 import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'sonner';
 
 export default function AllFeatures() {
   const anglePresets = [

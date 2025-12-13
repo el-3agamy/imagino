@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'sonner';
 
 interface LoginFormValues {
   email: string;

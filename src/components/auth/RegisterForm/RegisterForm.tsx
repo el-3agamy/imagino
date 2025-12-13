@@ -4,7 +4,7 @@ import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthInput } from '../Fields/AuthInput';

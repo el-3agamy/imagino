@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);
