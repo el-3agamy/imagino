@@ -10,76 +10,214 @@ import {
   Wand2,
   Sparkles,
   Trash2,
-  Image as ImageIco,
   Scan,
 } from 'lucide-react';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // shadcn components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  blurRegion,
   changeImageStyle,
   extractTextFromImage,
+  genImgWithNewBackground,
   genSuitableBackgroundById,
   getImageWithoutBackground,
   recognizeItemsInImage,
-  // mapApiToExtractTextHistoryItem,
 } from '@/services/images.service';
-import { SuitableBackgroundHistoryItem } from '@/types/suitableBgHistory';
-import { ChangeStyleHistoryItem } from '@/types/changeStyleAnimeHistory';
-import { ExtractTextHistoryItem } from '@/types/extractTextFromBgHistory';
 import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
-// import { Badge } from '@/components/ui/badge';
-// import { fetchApi, resShape } from '@/utils/fetchApi';
 import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
-import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function AllFeatures() {
+  const anglePresets = [
+    { label: 'Front', value: 'front' },
+    { label: 'Back', value: 'back' },
+    { label: 'Left', value: 'left' },
+    { label: 'Right', value: 'right' },
+    { label: 'top', value: 'top' },
+    { label: 'bottom', value: 'bottom' },
+    { label: 'Front-Right', value: 'front-right' },
+    { label: 'Front-Left', value: 'front-left' },
+    { label: 'Back Right', value: 'back-right' },
+    { label: 'Back Left', value: 'back-left' },
+    { label: 'Top Right', value: 'top-right' },
+    { label: 'Top Left', value: 'top-left' },
+    { label: 'Bottom Right', value: 'bottom-right' },
+    { label: 'Bottom Left', value: 'bottom-left' },
+    { label: 'Center', value: 'center' },
+  ];
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [, setHistory] = useState<string[]>([]);
   const [showRotate, setShowRotate] = useState(false);
   const [angle, setAngle] = useState<string>('');
-  const [, setHistorySuitableBg] = useState<SuitableBackgroundHistoryItem[]>([]);
-  const [, setHistoryChangeStyle] = useState<ChangeStyleHistoryItem[]>([]);
-  const [, setHistoryExtractText] = useState<ExtractTextHistoryItem[]>([]);
-  const [, setRecognizeItemsHistory] = useState<RecognizeItemsHistoryItem[]>([]);
   const [ImageId, setImageId] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [recognizedItems, setRecognizedItems] = useState<RecognizeItemsHistoryItem | null>(null);
+  const [showBlurRegion, setShowBlurRegion] = useState(false);
+  const [blurRadius, setBlurRadius] = useState<number>(25);
+  const [blurRect, setBlurRect] = useState({ x: 80, y: 80, width: 260, height: 200 });
+  const [imageBox, setImageBox] = useState({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    naturalWidth: 0,
+    naturalHeight: 0,
+  });
+  const [dragMode, setDragMode] = useState<
+    'move' | 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null
+  >(null);
+  const dragStartRef = useRef({ x: 0, y: 0, rect: { x: 0, y: 0, width: 0, height: 0 } });
   const provider = 'cloudinary';
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
+  const updateImageBox = () => {
+    if (!previewRef.current || !imageRef.current) return;
+    const imgRect = imageRef.current.getBoundingClientRect();
+    const contRect = previewRef.current.getBoundingClientRect();
+    setImageBox({
+      left: imgRect.left - contRect.left,
+      top: imgRect.top - contRect.top,
+      width: imgRect.width,
+      height: imgRect.height,
+      naturalWidth: imageRef.current.naturalWidth || imgRect.width,
+      naturalHeight: imageRef.current.naturalHeight || imgRect.height,
+    });
+  };
+
+  useEffect(() => {
+    if (!showBlurRegion || !previewRef.current || !imageRef.current) return;
+    updateImageBox();
+    const box = imageRef.current.getBoundingClientRect();
+    setBlurRect((current) => {
+      if (current.width > 0 && current.height > 0) return current;
+      const width = Math.max(120, box.width * 0.6);
+      const height = Math.max(120, box.height * 0.4);
+      return {
+        x: (box.width - width) / 2,
+        y: (box.height - height) / 2,
+        width,
+        height,
+      };
+    });
+  }, [showBlurRegion, preview]);
+
+  useEffect(() => {
+    const onResize = () => updateImageBox();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      if (!dragMode || !previewRef.current) return;
+      const bounds = imageBox;
+      if (!bounds.width || !bounds.height) return;
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      const start = dragStartRef.current.rect;
+      let { x, y, width, height } = start;
+      const minSize = 20;
+
+      const clamp = (value: number, min: number, max: number) =>
+        Math.min(Math.max(value, min), max);
+
+      const applyResize = (edge: 'left' | 'right' | 'top' | 'bottom', delta: number) => {
+        if (edge === 'left') {
+          const newX = clamp(x + delta, 0, x + width - minSize);
+          width = width + (x - newX);
+          x = newX;
+        }
+        if (edge === 'right') {
+          const maxWidth = bounds.width - x;
+          width = clamp(width + delta, minSize, maxWidth);
+        }
+        if (edge === 'top') {
+          const newY = clamp(y + delta, 0, y + height - minSize);
+          height = height + (y - newY);
+          y = newY;
+        }
+        if (edge === 'bottom') {
+          const maxHeight = bounds.height - y;
+          height = clamp(height + delta, minSize, maxHeight);
+        }
+      };
+
+      switch (dragMode) {
+        case 'move': {
+          x = clamp(x + dx, 0, bounds.width - width);
+          y = clamp(y + dy, 0, bounds.height - height);
+          break;
+        }
+        case 'nw':
+          applyResize('left', dx);
+          applyResize('top', dy);
+          break;
+        case 'ne':
+          applyResize('right', dx);
+          applyResize('top', dy);
+          break;
+        case 'sw':
+          applyResize('left', dx);
+          applyResize('bottom', dy);
+          break;
+        case 'se':
+          applyResize('right', dx);
+          applyResize('bottom', dy);
+          break;
+        case 'n':
+          applyResize('top', dy);
+          break;
+        case 's':
+          applyResize('bottom', dy);
+          break;
+        case 'e':
+          applyResize('right', dx);
+          break;
+        case 'w':
+          applyResize('left', dx);
+          break;
+        default:
+          break;
+      }
+
+      setBlurRect({ x, y, width, height });
+    };
+
+    const handleUp = () => setDragMode(null);
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+    };
+  }, [dragMode]);
+
+  const startDrag = (
+    e: React.MouseEvent<HTMLDivElement | HTMLButtonElement, MouseEvent>,
+    mode: 'move' | 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w'
+  ) => {
+    if (!previewRef.current) return;
+    e.preventDefault();
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      rect: { ...blurRect },
+    };
+    setDragMode(mode);
+  };
 
   function clear() {
     setFile(null);
     setPreview(null);
-  }
-
-  async function applyTemplate(templateId: string) {
-    if (!preview) return;
-    setProcessing(true);
-    try {
-      const res = await fetch('/api/apply-template', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: preview, templateId, provider }),
-      });
-      if (!res.ok) throw new Error('template failed');
-      const json = await res.json();
-      if (json?.result_url) {
-        setPreview(json.result_url);
-        setHistory((h) => [json.result_url, ...h].slice(0, 20));
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error applying template — check console.');
-    } finally {
-      setProcessing(false);
-    }
   }
 
   async function downloadImage() {
@@ -102,11 +240,11 @@ export default function AllFeatures() {
 
       if (enhancedUrl) {
         setPreview(enhancedUrl);
-        setHistory((h) => [enhancedUrl, ...h].slice(0, 20));
+        // setHistory((h) => [enhancedUrl, ...h].slice(0, 20));
       }
     } catch (err) {
       console.error(err);
-      alert('Error enhancing image — please try again.');
+      toast.error('Error enhancing image — please try again.');
     } finally {
       setProcessing(false);
     }
@@ -126,24 +264,19 @@ export default function AllFeatures() {
     }
 
     if (angle === '') {
-      toast.error('Angle is required.');
-      return;
-    }
-
-    const parsedAngle = Number(angle);
-    if (!Number.isFinite(parsedAngle) || parsedAngle < 0 || parsedAngle > 360) {
-      toast.error('Angle must be between 0 and 360.');
+      toast.error('View is required.');
       return;
     }
 
     setProcessing(true);
     try {
-      const res = await genImageWithNewDimension(file, parsedAngle);
+      const res = await genImageWithNewDimension(file, angle);
       const rotatedUrl = res?.result?.enhanced?.url;
       console.log(res, '👉', rotatedUrl);
+
       if (rotatedUrl) {
         setPreview(rotatedUrl);
-        setHistory((h) => [rotatedUrl, ...h].slice(0, 20));
+        // setHistory((h) => [rotatedUrl, ...h].slice(0, 20));
       }
     } catch (err) {
       console.error(err);
@@ -160,13 +293,9 @@ export default function AllFeatures() {
     try {
       const fd = new FormData();
       fd.append('imageFile', file);
-
       const result = await getImageWithoutBackground(fd);
 
-      console.log('Remove-bg API result:', result);
-
       const imageUrl = result.imageSrc || result.enhancedImageSrc || result.originalImageSrc;
-      console.log(imageUrl);
 
       if (!imageUrl) {
         console.error('No image returned from remove-bg. Full result:', result);
@@ -175,7 +304,7 @@ export default function AllFeatures() {
       }
 
       setPreview(imageUrl);
-      setHistory((h) => [imageUrl, ...h].slice(0, 20));
+      // setHistory((h) => [imageUrl, ...h].slice(0, 20));
       setImageId(result.id);
     } catch (err) {
       console.error(err);
@@ -186,16 +315,43 @@ export default function AllFeatures() {
   }
 
   async function generateSuitableBg() {
-    if (!ImageId) return toast.error('No image available to generate background');
+    if (!ImageId)
+      return toast.error('Need to remove background first to get Generate new background.');
     setProcessing(true);
     try {
       const result = await genSuitableBackgroundById(ImageId);
       if (!result.imageSrc) throw new Error('No image returned from suitable-background');
       setPreview(result.imageSrc);
-      setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
+      // setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
     } catch (err) {
       console.error(err);
       toast.error('Error generating suitable background — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function genImageWithNewBackground() {
+    if (!ImageId) {
+      toast.error('Remove the background first to apply a new one.');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const res = await genImgWithNewBackground({ imageId: ImageId });
+      const generatedUrl = res?.result?.generatedImage?.url;
+
+      if (!generatedUrl) {
+        throw new Error('No generated image returned from new-background API');
+      }
+
+      setPreview(generatedUrl);
+      // setHistory((h) => [generatedUrl, ...h].slice(0, 20));
+      setImageId(res.result.generatedImage._id || ImageId);
+    } catch (err) {
+      console.error(err);
+      toast.error('Error applying background — check console.');
     } finally {
       setProcessing(false);
     }
@@ -206,9 +362,16 @@ export default function AllFeatures() {
     try {
       const result = await changeImageStyle(file, style);
       setPreview(result.enhancedImageSrc || '');
-      setHistoryChangeStyle((h) => [result, ...h].slice(0, 20));
+      // setHistoryChangeStyle((h) => [result, ...h].slice(0, 20));
       setImageId(result.id);
     } catch (err) {
+      if (err instanceof Error && err.message === 'AUTH_EXPIRED') {
+        toast.error('Session expired. Please log in again.');
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login?authExpired=1';
+        }
+        return;
+      }
       console.error(err);
       toast.error('Error changing style — check console.');
     } finally {
@@ -228,7 +391,8 @@ export default function AllFeatures() {
 
       // تحديث الـ state بناءً على النتيجة مباشرة
       setExtractedText(result.text);
-      setHistoryExtractText((h) => [result, ...h].slice(0, 20));
+      // setHistoryExtractText((h) => [result, ...h].slice(0, 20));
+      setRecognizedItems(null); // مسح العناصر المتعرف عليها عند استخراج النص
     } catch (err) {
       console.error(err);
       toast.error('Error extracting text — check console.');
@@ -249,10 +413,60 @@ export default function AllFeatures() {
       console.log('Recognize-items result:', result);
 
       setRecognizedItems(result);
-      setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
+      // setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
+      setExtractedText(''); // مسح النص المستخرج عند التعرف على العناصر
     } catch (err) {
       console.error(err);
       toast.error('Error recognizing items — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function applyBlurRegion() {
+    if (!preview) {
+      toast.error('Upload or generate an image first.');
+      return;
+    }
+
+    if (!ImageId && !file) {
+      toast.error('Provide an image by upload or use an existing imageId.');
+      return;
+    }
+
+    if (!imageBox.width || !imageBox.height || !imageBox.naturalWidth || !imageBox.naturalHeight) {
+      toast.error('Image dimensions unavailable. Please try again.');
+      return;
+    }
+
+    const scaleX = imageBox.naturalWidth / imageBox.width;
+    const scaleY = imageBox.naturalHeight / imageBox.height;
+
+    const bodyX = Math.round(blurRect.x * scaleX);
+    const bodyY = Math.round(blurRect.y * scaleY);
+    const bodyWidth = Math.round(blurRect.width * scaleX);
+    const bodyHeight = Math.round(blurRect.height * scaleY);
+
+    setProcessing(true);
+    try {
+      const res = await blurRegion({
+        imageId: ImageId || undefined,
+        file: ImageId ? undefined : file || undefined,
+        x: bodyX,
+        y: bodyY,
+        width: bodyWidth,
+        height: bodyHeight,
+        blurRadius: Math.round(blurRadius),
+      });
+
+      const newUrl = res?.result?.blurredImage?.url;
+
+      if (newUrl) {
+        setPreview(newUrl);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error applying blur region — check console.');
     } finally {
       setProcessing(false);
     }
@@ -265,7 +479,7 @@ export default function AllFeatures() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white rounded-2xl shadow">
-              <ImageIco className="w-7 h-7 text-slate-700" />
+              <ImageIcon className="w-7 h-7 text-slate-700" />
             </div>
             <div>
               <h1 className="text-2xl font-semibold">Pebblely — All Features</h1>
@@ -314,28 +528,19 @@ export default function AllFeatures() {
                   </Button>
 
                   <Button
-                    onClick={generateSuitableBg}
+                    onClick={genImageWithNewBackground}
                     disabled={!preview || processing}
                     className="rounded-2xl"
                   >
-                    <Wand2 className="w-4 h-4 mr-2" /> Apply Suitable BG
+                    <Wand2 className="w-4 h-4 mr-2" /> Generate BG
                   </Button>
 
                   <Button
-                    onClick={() => applyTemplate('shadow-soft')}
+                    onClick={() => ''}
                     disabled={!preview || processing}
                     className="rounded-2xl"
                   >
                     <Expand className="w-4 h-4 mr-2" /> Add Shadow
-                  </Button>
-
-                  <Button
-                    onClick={() => callChangeStyle(file!, selectedStyle!)}
-                    disabled={!preview || processing || !selectedStyle}
-                    className="rounded-2xl flex items-center gap-2"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Change Style
                   </Button>
 
                   <Button
@@ -377,29 +582,67 @@ export default function AllFeatures() {
 
                   {showRotate && (
                     <div className="rounded-2xl border border-slate-200 bg-white p-3 flex flex-col gap-2">
-                      <input
-                        type="number"
-                        min={0}
-                        max={360}
+                      <select
                         value={angle}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '') {
-                            setAngle('');
-                            return;
-                          }
-                          const clamped = Math.min(360, Math.max(0, Number(val)));
-                          setAngle(String(clamped));
-                        }}
-                        placeholder="Engter angle"
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200"
-                      />
+                        onChange={(e) => setAngle(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200 bg-white"
+                      >
+                        <option value="" disabled>
+                          Select view
+                        </option>
+                        {anglePresets.map((preset) => (
+                          <option key={preset.value} value={preset.value}>
+                            {preset.label}
+                          </option>
+                        ))}
+                      </select>
                       <Button
                         onClick={rotateImage}
                         disabled={processing || angle === ''}
                         className="rounded-2xl"
                       >
                         <Loader2 className="w-4 h-4 mr-2" /> Rotate
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-2 space-y-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (!preview) {
+                        toast.error('Upload or generate an image first.');
+                        return;
+                      }
+                      setShowBlurRegion((prev) => !prev);
+                    }}
+                    className="w-full rounded-2xl"
+                  >
+                    Blur Region
+                  </Button>
+
+                  {showBlurRegion && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-3 flex flex-col gap-3">
+                      <label className="text-sm text-slate-600 flex items-center justify-between gap-2">
+                        <span>Blur radius</span>
+                        <span className="text-slate-800 font-medium">{blurRadius}</span>
+                      </label>
+                      <input
+                        type="range"
+                        min={1}
+                        max={100}
+                        step={1}
+                        value={blurRadius}
+                        onChange={(e) => setBlurRadius(Number(e.target.value))}
+                        className="w-full accent-slate-700"
+                      />
+                      <Button
+                        onClick={applyBlurRegion}
+                        disabled={processing}
+                        className="rounded-2xl"
+                      >
+                        Apply
                       </Button>
                     </div>
                   )}
@@ -441,6 +684,14 @@ export default function AllFeatures() {
                 ))}
               </div>
             </CardContent>
+            <Button
+              onClick={() => callChangeStyle(file!, selectedStyle!)}
+              disabled={!preview || processing || !selectedStyle}
+              className="rounded-2xl flex items-center gap-2 mx-5"
+            >
+              <Sparkles className="w-5 h-5" />
+              Change Style
+            </Button>
           </Card>
         </motion.aside>
 
@@ -456,9 +707,14 @@ export default function AllFeatures() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-2xl p-6 shadow flex flex-col gap-4">
-                <div className="w-full h-[520px] rounded-2xl border border-slate-100 bg-linear-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden">
+                <div
+                  ref={previewRef}
+                  className="relative w-full h-[520px] rounded-2xl border border-slate-100 bg-linear-to-b from-slate-50 to-white flex items-center justify-center overflow-hidden"
+                >
                   {preview ? (
                     <motion.img
+                      ref={imageRef}
+                      onLoad={updateImageBox}
                       key={preview}
                       src={preview}
                       alt="preview"
@@ -474,8 +730,61 @@ export default function AllFeatures() {
                         <Button onClick={() => inputRef.current?.click()} className="rounded-2xl">
                           Upload
                         </Button>
-                        <Button onClick={() => alert('Try sample image')}>Sample</Button>
                       </div>
+                    </div>
+                  )}
+
+                  {preview && showBlurRegion && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{ cursor: dragMode === 'move' ? 'grabbing' : 'default' }}
+                    >
+                      <div
+                        className="absolute border-2 border-sky-500/80 bg-sky-300/10"
+                        style={{
+                          left: imageBox.left + blurRect.x,
+                          top: imageBox.top + blurRect.y,
+                          width: blurRect.width,
+                          height: blurRect.height,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          className="absolute inset-0 w-full h-full cursor-move"
+                          onMouseDown={(e) => startDrag(e, 'move')}
+                          style={{ pointerEvents: 'auto' }}
+                          aria-label="Move blur region"
+                        />
+
+                        {(
+                          [
+                            ['nw', 'top-0 left-0 cursor-nw-resize'],
+                            ['ne', 'top-0 right-0 cursor-ne-resize'],
+                            ['sw', 'bottom-0 left-0 cursor-sw-resize'],
+                            ['se', 'bottom-0 right-0 cursor-se-resize'],
+                            ['n', 'top-0 left-1/2 -translate-x-1/2 cursor-n-resize'],
+                            ['s', 'bottom-0 left-1/2 -translate-x-1/2 cursor-s-resize'],
+                            ['e', 'top-1/2 right-0 -translate-y-1/2 cursor-e-resize'],
+                            ['w', 'top-1/2 left-0 -translate-y-1/2 cursor-w-resize'],
+                          ] as const
+                        ).map(([key, classes]) => (
+                          <button
+                            key={key}
+                            type="button"
+                            className={`absolute w-3 h-3 bg-white border border-sky-500 rounded-full -translate-x-1/2 -translate-y-1/2 ${classes}`}
+                            onMouseDown={(e) => startDrag(e, key)}
+                            style={{ pointerEvents: 'auto' }}
+                            aria-label={`Resize ${key}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {processing && (
+                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
+                      <p className="text-sm text-slate-700">this might takes a moment...</p>
                     </div>
                   )}
                 </div>
@@ -489,50 +798,35 @@ export default function AllFeatures() {
               </CardHeader>
 
               <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {/* Preview Image */}
-                  <div className="border rounded-xl p-4 flex items-center justify-center">
-                    {preview ? (
-                      <Image
-                        src={preview}
-                        alt="preview"
-                        className="max-h-[350px] object-contain rounded-xl"
-                      />
-                    ) : (
-                      <p className="text-slate-400 text-sm">No image available</p>
-                    )}
-                  </div>
+                {/* Extracted Text & Recognized Items */}
+                <div className="border rounded-xl p-4 bg-slate-50 max-h-[350px] overflow-auto whitespace-pre-wrap">
+                  {/* Extracted Text */}
+                  {extractedText && (
+                    <div className="mb-4">
+                      <p className="font-semibold mb-1">Extracted Text:</p>
+                      <p>{extractedText}</p>
+                    </div>
+                  )}
 
-                  {/* Extracted Text & Recognized Items */}
-                  <div className="border rounded-xl p-4 bg-slate-50 max-h-[350px] overflow-auto whitespace-pre-wrap">
-                    {/* Extracted Text */}
-                    {extractedText && (
-                      <div className="mb-4">
-                        <p className="font-semibold mb-1">Extracted Text:</p>
-                        <p>{extractedText}</p>
-                      </div>
-                    )}
-
-                    {/* Recognized Items */}
-                    {recognizedItems && recognizedItems.items.length > 0 && (
-                      <div>
-                        <p className="font-semibold mb-2">
-                          Recognized Items ({recognizedItems.totalItemsDetected}):
-                        </p>
-                        <ul className="list-disc list-inside space-y-1">
-                          {recognizedItems.items.map(
-                            (item: RecognizeItemsHistoryItem['items'][number], idx: number) => (
-                              <li key={idx}>
-                                <span className="font-medium">{item.item_name}</span> -{' '}
-                                {item.category} (Count: {item.count})
-                                <p className="text-xs text-slate-500">{item.description}</p>
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+                  {/* Recognized Items */}
+                  {recognizedItems && recognizedItems.items.length > 0 && (
+                    <div>
+                      <p className="font-semibold mb-2">
+                        Recognized Items ({recognizedItems.totalItemsDetected}):
+                      </p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {recognizedItems.items.map(
+                          (item: RecognizeItemsHistoryItem['items'][number], idx: number) => (
+                            <li key={idx}>
+                              <span className="font-medium">{item.item_name}</span> -{' '}
+                              {item.category} (Count: {item.count})
+                              <p className="text-lg text-slate-500">{item.description}</p>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -1,7 +1,9 @@
 'use server';
+import { redirect } from 'next/navigation';
 import { fetchApi } from '@/utils/fetchApi';
 import { getServerCookies } from '@/services/ServerCookies.service';
 import { ACCESS_TOKEN_COOKIE_KEY } from '@/utils/Cookies.keys';
+import { defaultLang } from '@/i18n/settings';
 
 import type {
   BackgroundsForImageResponse,
@@ -33,24 +35,37 @@ const BLUR_REGION_ENDPOINT = 'image/blur-image-region';
 const RESIZE_IMAGE_ENDPOINT = 'image/gen-resize-img';
 const NEW_BACKGROUND_ENDPOINT = 'image/gen-img-with-new-background';
 const SELECTED_BACKGROUND_ENDPOINT = 'image/gen-img-with-selected-background';
+const LOGIN_PATH_ON_AUTH_EXPIRED = `/${defaultLang}/auth/login?authExpired=1`;
+
+function redirectOnAuthExpired(error: unknown) {
+  if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+    redirect(LOGIN_PATH_ON_AUTH_EXPIRED);
+  }
+}
 
 export async function inhanceImageQuality(file: File): Promise<EnhancedImageResponse> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
 
   const formData = new FormData();
   formData.append('image', file);
+  try {
+    const response = await fetchApi<EnhancedImageResponse>(ENHANCE_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<EnhancedImageResponse>(ENHANCE_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Enhance Image Quality API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Enhance Image Quality API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function genImageWithNewDimension(
@@ -62,33 +77,48 @@ export async function genImageWithNewDimension(
   const formData = new FormData();
   formData.append('image', file);
   formData.append('angle', String(angle));
+  try {
+    const response = await fetchApi<NewAngleImageResponse>(NEW_DIMENSION_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<NewAngleImageResponse>(NEW_DIMENSION_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Gen Img with New-dimension API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Gen Img with New-dimension API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function getImage(imageId: string): Promise<ImageResponse> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+  try {
+    const response = await fetchApi<ImageResponse>(
+      `${GET_IMAGE_ENDPOINT}?imageId=${encodeURIComponent(imageId)}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `hamada ${token || ''}`,
+        },
+        cache: 'no-cache',
+      }
+    );
 
-  const response = await fetchApi<ImageResponse>(`${GET_IMAGE_ENDPOINT}/${imageId}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Get Image API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Get Image API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function getBackgroundVersions(
@@ -105,17 +135,23 @@ export async function getBackgroundVersions(
   const endpoint = `${GET_BACKGROUND_VERSIONS_ENDPOINT}/${imageId}${
     queryString ? `?${queryString}` : ''
   }`;
+  try {
+    const response = await fetchApi<BackgroundsForImageResponse>(endpoint, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<BackgroundsForImageResponse>(endpoint, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Background Versions API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Background Versions API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function blurRegion(params: {
@@ -144,18 +180,24 @@ export async function blurRegion(params: {
   if (typeof blurRadius !== 'undefined') {
     formData.append('blurRadius', String(blurRadius));
   }
+  try {
+    const response = await fetchApi<BlurredImageResponse>(BLUR_REGION_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<BlurredImageResponse>(BLUR_REGION_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Blur Region API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Blur Region API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function resizeImage(params: {
@@ -193,18 +235,24 @@ export async function resizeImage(params: {
   if (typeof quality !== 'undefined') formData.append('quality', String(quality));
   if (typeof allowUpscale !== 'undefined') formData.append('allowUpscale', String(allowUpscale));
   if (typeof position !== 'undefined') formData.append('position', position);
+  try {
+    const response = await fetchApi<ResizedImageResponse>(RESIZE_IMAGE_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<ResizedImageResponse>(RESIZE_IMAGE_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Resize Image API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Resize Image API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function genImgWithNewBackground(params: {
@@ -218,27 +266,33 @@ export async function genImgWithNewBackground(params: {
 }): Promise<NewBackgroundImageResponse> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
   const { imageId, prompt, negativePrompt, stylePreset, seed, width, height } = params;
+  const payload: Record<string, unknown> = { imageId };
+  console.log('imageId in genImgWithNewBackground:👉👉', imageId);
+  if (typeof prompt !== 'undefined') payload.prompt = prompt;
+  if (typeof negativePrompt !== 'undefined') payload.negativePrompt = negativePrompt;
+  if (typeof stylePreset !== 'undefined') payload.stylePreset = stylePreset;
+  if (typeof seed !== 'undefined') payload.seed = seed;
+  if (typeof width !== 'undefined') payload.width = width;
+  if (typeof height !== 'undefined') payload.height = height;
+  try {
+    const response = await fetchApi<NewBackgroundImageResponse>(NEW_BACKGROUND_ENDPOINT, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const formData = new FormData();
-  formData.append('imageId', imageId);
-  if (typeof prompt !== 'undefined') formData.append('prompt', prompt);
-  if (typeof negativePrompt !== 'undefined') formData.append('negativePrompt', negativePrompt);
-  if (typeof stylePreset !== 'undefined') formData.append('stylePreset', stylePreset);
-  if (typeof seed !== 'undefined') formData.append('seed', String(seed));
-  if (typeof width !== 'undefined') formData.append('width', String(width));
-  if (typeof height !== 'undefined') formData.append('height', String(height));
-
-  const response = await fetchApi<NewBackgroundImageResponse>(NEW_BACKGROUND_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Gen Img with New-background API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Gen Img with New-background API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
 export async function genImgWithSelectedBackground(params: {
@@ -261,21 +315,28 @@ export async function genImgWithSelectedBackground(params: {
   formData.append('productImageId', productImageId);
   if (backgroundImageId) formData.append('backgroundImageId', backgroundImageId);
   if (backgroundImageFile) formData.append('backgroundImage', backgroundImageFile);
+  try {
+    const response = await fetchApi<SelectedBackgroundImageResponse>(SELECTED_BACKGROUND_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      cache: 'no-cache',
+    });
 
-  const response = await fetchApi<SelectedBackgroundImageResponse>(SELECTED_BACKGROUND_ENDPOINT, {
-    method: 'POST',
-    body: formData,
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    cache: 'no-cache',
-  });
-
-  return response;
+    console.log('Image with Selected-background API full response:👉👉', response);
+    return response;
+  } catch (error) {
+    console.error('Error in Image with Selected-background API:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
+  }
 }
 
-// ----------------------
+// ---------------------- Ashraf ---------------------
+
 type UploadImageNoBgResponse = {
   message: string;
   status: number;
@@ -418,22 +479,25 @@ export async function mapApiToRecognizeItemsHistoryItem(
 
 export async function getImageWithoutBackground(formData: FormData): Promise<RemoveBgHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
-  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/gen-img-without-background`;
+  try {
+    const json = await fetchApi<UploadImageNoBgResponse>('image/gen-img-without-background', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      body: formData,
+    });
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    body: formData,
-  });
+    if (!json.result) {
+      throw new Error('No result returned from remove-bg API');
+    }
 
-  console.log('Remove-bg API response status:', response.status);
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('Raw server response:', text);
+    console.log('Remove-bg API result:👉👉', json);
+    return mapApiToRemoveBgHistoryItem(json.result);
+  } catch (error) {
+    console.error('Remove-bg API error:❌❌', error);
+    redirectOnAuthExpired(error);
     return {
       id: '',
       type: 'remove-bg',
@@ -444,44 +508,33 @@ export async function getImageWithoutBackground(formData: FormData): Promise<Rem
       enhancedImageSrc: undefined,
     };
   }
-
-  const json: UploadImageNoBgResponse = await response.json();
-  console.log('Full remove-bg API response:', json);
-
-  if (!json.result) {
-    throw new Error('No result returned from remove-bg API');
-  }
-
-  return mapApiToRemoveBgHistoryItem(json.result);
 }
 
 export async function genSuitableBackgroundById(
   imageId: string
 ): Promise<SuitableBackgroundHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
-  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/gen-suitable-background`;
+  try {
+    const json = await fetchApi<SuitableBackgroundApiResponse>('image/gen-suitable-background', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      body: JSON.stringify({ imageId }),
+    });
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    body: JSON.stringify({ imageId }),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Server returned ${response.status}: ${text}`);
+    if (!json.result) {
+      throw new Error('No result returned from suitable-background API');
+    }
+    console.log('Suitable-background API full response:👉👉', json);
+    return mapApiToSuitableBackgroundHistoryItem(json.result);
+  } catch (error) {
+    console.error('Suitable-background API error:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
   }
-
-  const json: SuitableBackgroundApiResponse = await response.json();
-  if (!json.result) {
-    throw new Error('No result returned from suitable-background API');
-  }
-
-  return mapApiToSuitableBackgroundHistoryItem(json.result);
 }
 
 export async function changeImageStyle(file: File, style: string): Promise<ChangeStyleHistoryItem> {
@@ -491,90 +544,87 @@ export async function changeImageStyle(file: File, style: string): Promise<Chang
   fd.append('image', file);
   fd.append('style', style);
 
-  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/gen-change-image-style`;
+  try {
+    const json = await fetchApi<{ result: { original: ImageDocument; enhanced: ImageDocument } }>(
+      'image/gen-change-image-style',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `hamada ${token || ''}`,
+          Accept: 'application/json',
+        },
+        body: fd,
+      }
+    );
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `hamada ${token || ''}`,
-      Accept: 'application/json',
-    },
-    body: fd,
-  });
-
-  console.log('Change Style API response status:', response.status);
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('Raw server response:', text);
-    throw new Error(`Server returned ${response.status}: ${text}`);
+    if (!json.result) {
+      console.error('Change Style API result empty:', json);
+      throw new Error('No result returned from Change Style API');
+    }
+    console.log('Change Style API full response:👉👉', json);
+    return mapApiToChangeStyleHistoryItem(json.result);
+  } catch (error) {
+    console.error('Change Style API error:❌❌', error);
+    redirectOnAuthExpired(error);
+    throw error;
   }
-
-  const json = await response.json();
-  if (!json.result) {
-    console.error('Change Style API result empty:', json);
-    throw new Error('No result returned from Change Style API');
-  }
-
-  return mapApiToChangeStyleHistoryItem(json.result);
 }
 
 export async function extractTextFromImage(formData: FormData): Promise<ExtractTextHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
-  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/extract-text-from-img`;
+  try {
+    const json = await fetchApi<ExtractTextResponse>('image/extract-text-from-img', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      body: formData,
+    });
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    body: formData,
-  });
+    console.log('Extract-text API full response:', json);
 
-  console.log('Extract-text API Status:', response.status);
-
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('Extract-text raw error:', text);
-
+    if (!json.result?.text) {
+      throw new Error('No text returned from extract-text API');
+    }
+    console.log('extract-text API text result:👉👉', json.result);
+    return mapApiToExtractTextHistoryItem(json.result);
+  } catch (error) {
+    console.error('Extract-text API error:❌❌', error);
+    redirectOnAuthExpired(error);
     return {
       id: '',
       text: '',
       createdAt: new Date().toISOString(),
     };
   }
-
-  const json: ExtractTextResponse = await response.json();
-  console.log('Extract-text API full response:', json);
-
-  if (!json.result?.text) {
-    throw new Error('No text returned from extract-text API');
-  }
-
-  return mapApiToExtractTextHistoryItem(json.result);
 }
 
 export async function recognizeItemsInImage(
   formData: FormData
 ): Promise<RecognizeItemsHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
-  const endpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL}image/recognize-items-in-img`;
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `hamada ${token || ''}`,
-    },
-    body: formData,
-  });
+  try {
+    const json = await fetchApi<RecognizeItemsResponse>('image/recognize-items-in-img', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `hamada ${token || ''}`,
+      },
+      body: formData,
+    });
 
-  console.log('Recognize Items API Status:', response.status);
+    console.log('Recognance Items API full ( fulld response:', json);
 
-  if (!response.ok) {
-    const text = await response.text();
-    console.error('Recognize Items raw error:', text);
+    if (!json.result?.text?.items) {
+      throw new Error('No items returned from recognize-items API');
+    }
 
+    console.log('recognize-items API text result:👉👉', json.result);
+    return mapApiToRecognizeItemsHistoryItem(json.result.text);
+  } catch (error) {
+    console.error('Recognize-items API error:❌❌', error);
+    redirectOnAuthExpired(error);
     return {
       id: '',
       items: [],
@@ -582,13 +632,4 @@ export async function recognizeItemsInImage(
       createdAt: new Date().toISOString(),
     };
   }
-
-  const json: RecognizeItemsResponse = await response.json();
-  console.log('Recognance Items API full ( fulld response:', json);
-
-  if (!json.result?.text?.items) {
-    throw new Error('No items returned from recognize-items API');
-  }
-
-  return mapApiToRecognizeItemsHistoryItem(json.result.text);
 }

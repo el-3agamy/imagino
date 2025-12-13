@@ -7,7 +7,7 @@ import { handleApiResponse } from '@/utils/RequestHelpers';
 import { Eye, EyeOff, LoaderIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -16,7 +16,11 @@ interface LoginFormValues {
   password: string;
 }
 
-export default function LoginForm() {
+interface LoginFormProps {
+  authExpired?: boolean;
+}
+
+export default function LoginForm({ authExpired }: LoginFormProps) {
   const lang = useRouteLang();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -35,6 +39,12 @@ export default function LoginForm() {
 
   const emailValue = useWatch({ control, name: 'email' });
   const isDisabled = isSubmitting || !emailValue;
+
+  useEffect(() => {
+    if (authExpired) {
+      toast.error('Your session expired. Please log in again.');
+    }
+  }, [authExpired]);
 
   async function onSubmit(values: LoginFormValues) {
     try {
