@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
+import { removeBackground } from '@/lib/removeBackground';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);

@@ -7,7 +7,6 @@ import { RESET_EMAIL_COOKIE_KEY } from '@/utils/Cookies.keys';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { Toaster } from 'sonner';
 import { AuthInput } from '../Fields/AuthInput';
 
 interface ForgotPasswordValues {
@@ -37,7 +36,6 @@ export function ForgotPasswordForm() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <header className="space-y-1">
           <h1 className="text-xl font-semibold text-foreground sm:text-2xl">Forgot Password</h1>

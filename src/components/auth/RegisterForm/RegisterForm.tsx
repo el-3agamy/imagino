@@ -4,13 +4,13 @@ import { useRouteLang } from '@/hooks/useLang';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { Toaster, toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthInput } from '../Fields/AuthInput';
 import { registerAction } from '@/services/Auth.Server.service';
 import { handleApiResponse } from '@/utils/RequestHelpers';
 import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 export interface RegisterFormValues {
   firstName: string;
@@ -40,6 +40,7 @@ export default function RegisterForm() {
       password: '',
       confirmPassword: '',
     },
+    
   });
 
   const passwordValue = useWatch({ control, name: 'password' });
@@ -71,7 +72,6 @@ export default function RegisterForm() {
 
   return (
     <>
-      <Toaster position="top-center" />
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3 register-form">
         <header className="space-y-1 text-center">
           <h1 className="text-xl font-semibold text-foreground sm:text-2xl dark:text-card-foreground">
