@@ -11,8 +11,9 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
+const items = Array.from({ length: 18 }, (_, i) => `/assets/gallery/gallery${i + 1}.jpg`);
 export default function Sec9() {
-  const items = Array.from({ length: 18 }).map((_, i) => i);
+  // const items = Array.from({ length: 18 }).map((_, i) => i);
   return (
     <Section className="py-16">
       <Container>
@@ -22,10 +23,10 @@ export default function Sec9() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {items.map((item, idx) => (
-            <Dialog key={idx}>
+            <Dialog key={item}>
               <DialogTrigger className="template-thumb">
                 <Image
-                  src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
+                  src={item}
                   alt="template"
                   width={400}
                   height={400}
@@ -42,7 +43,7 @@ export default function Sec9() {
                   <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2">
                       <Image
-                        src={'/assets/NotLoggedHome/sec9/armchair-green.jpg'}
+                        src={item}
                         alt="preview"
                         width={900}
                         height={600}

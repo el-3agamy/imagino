@@ -19,7 +19,7 @@ export default function Sec10() {
               className="block bg-[color:var(--card)] p-6 rounded-xl hover:shadow-xl"
             >
               <p className="mb-4">
-                Pebblely has been a game-changer for my jewelry startup. It allows me to create
+                Imagino has been a game-changer for my jewelry startup. It allows me to create
                 stunning model shots without hiring professionals.
               </p>
               <hr className="sep my-4" />
@@ -45,7 +45,7 @@ export default function Sec10() {
             Grow your business with AI
           </h3>
           <Link href={'all-features'} className="btn btn-primary">
-            Try Pebblely free
+            Try Imagino free
           </Link>
         </div>
       </Container>

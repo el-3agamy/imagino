@@ -33,7 +33,7 @@ export default function Gallery() {
       <header className="p-8 md:p-12 text-center">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Find your next winning shot</h1>
         <p className="mt-2 text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-          Click any image to preview details — similar to the Pebblely experience.
+          Click any image to preview details — similar to the Imagino experience.
         </p>
       </header>
 
@@ -62,8 +62,7 @@ export default function Gallery() {
                 />
               </div>
 
-              <GalleryTempLayer>
-              </GalleryTempLayer>
+              <GalleryTempLayer></GalleryTempLayer>
             </div>
           ))}
         </div>

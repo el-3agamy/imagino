@@ -160,7 +160,7 @@ export default function PricingFullPage() {
             Grow your business with AI
           </h1>
           <button className="inline-block bg-[color:var(--main-color)] hover:bg-[color:var(--main-hover-color)] text-black font-semibold px-6 py-3 rounded-lg transition focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]">
-            Try Pebblely free
+            Try Imagino free
           </button>
         </div>
       </div>

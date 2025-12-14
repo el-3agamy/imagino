@@ -1,19 +1,22 @@
+'use client';
 import ProductsIdeas from '@/components/blog/ProductsIdeas/ProductsIdeas';
 import MasonryGallaryLayout from '@/components/gallery/MasonryGallaryLayout/MasonryGallaryLayout';
 import Container from '@/components/shared/Container/Container';
 import Section from '@/components/shared/Section/Section';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Metadata } from 'next';
+// import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { blogs } from './_data/blogs';
+import { useTheme } from 'next-themes';
 
-export const metadata: Metadata = {
-  title: 'IMAGINO - Blogs',
-  description: 'Explore more Blogs About Us Here!',
-};
+// export const metadata: Metadata = {
+//   title: 'IMAGINO - Blogs',
+//   description: 'Explore more Blogs About Us Here!',
+// };
 
 export default function Blog() {
+  const { theme } = useTheme();
   return (
     <>
       <div className="w-full min-h-screen py-12">
@@ -21,7 +24,7 @@ export default function Blog() {
         <Container>
           <div className="px-6">
             <Section className="text-center mb-8">
-              <h1 className="text-4xl font-bold mb-4">The Pebblely Blog</h1>
+              <h1 className="text-4xl font-bold mb-4">The Imagino Blog</h1>
               <p className="text-lg text-muted max-w-2xl mx-auto">
                 Resources to help you become smarter about using AI for your marketing.
               </p>
@@ -57,7 +60,12 @@ export default function Blog() {
 
                 <div className="flex items-center gap-3">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                    <Image src="/logo.png" fill alt="author avatar" className="object-cover" />
+                    <Image
+                      src={`/${theme === 'dark' ? 'logo-dark.png' : 'logo.png'}`}
+                      fill
+                      alt="author avatar"
+                      className="object-cover"
+                    />
                   </div>
                   <div>
                     <h4 className="font-medium">Saeid Agamy</h4>

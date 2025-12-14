@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -10,6 +11,7 @@ interface MobileNavProps {
 }
 
 export default function MobileNav({ isMobileOpen, isAuth, setIsMobileOpen, lang }: MobileNavProps) {
+  const { theme } = useTheme();
   const mobileNavArr = isAuth
     ? ['Home', 'Blogs', 'Gallery', 'FAQ', 'Upgrade']
     : ['Home', 'Blogs', 'Gallery', 'FAQ', 'Pricing', 'Log in'];
@@ -27,13 +29,13 @@ export default function MobileNav({ isMobileOpen, isAuth, setIsMobileOpen, lang 
         <div className="flex items-center justify-between px-4 py-4 border-b border-neutral-200 dark:border-neutral-800">
           <Link href={`/${lang}`} className="flex items-center gap-2">
             <Image
-              src="/logo.png"
-              width={50}
+              src={`/${theme === 'dark' ? 'logo-dark.png' : 'logo.png'}`}
+              width={100}
               height={50}
-              alt="Pebblely Logo"
-              className="h-6 w-auto"
+              alt="Imagino Logo"
+              className=" w-auto"
             />
-            <span className="font-semibold text-lg tracking-tight dark:text-white">Pebblely</span>
+            {/* <span className="font-semibold text-lg tracking-tight dark:text-white">Imagino</span> */}
           </Link>
           <button aria-label="Close menu" className="p-2" onClick={() => setIsMobileOpen(false)}>
             <X className="h-5 w-5" />

@@ -15,7 +15,7 @@ export default function Sec5() {
               </h3>
               <p className="mb-4 text-lg leading-relaxed">
                 Just describe the background you want or pick from 40+ themes. Unlike manual
-                editing, Pebblely will create photos with the appropriate reflections and shadows
+                editing, Imagino will create photos with the appropriate reflections and shadows
                 automatically.
               </p>
 

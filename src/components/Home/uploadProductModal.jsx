@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
-import { removeBackground } from '@/lib/removeBackground';
+import { getImageWithoutBackground } from '@/services/images.service';
 
 function UploadProductModal({ onClose }) {
   const [preview, setPreview] = useState(null);
@@ -26,21 +26,27 @@ function UploadProductModal({ onClose }) {
     setProcessedAsset(null);
 
     try {
-      const result = await removeBackground({ imageFile });
+      const formData = new FormData();
+      formData.append('imageFile', imageFile);
 
-      setPreview(result.url);
-      if (result.filename) {
-        setProductName(result.filename);
+      const result = await getImageWithoutBackground(formData);
+      const imageUrl = result.imageSrc || result.enhancedImageSrc || result.originalImageSrc;
+
+      if (!imageUrl) {
+        throw new Error('No image returned from remove background API');
       }
-      if (result.id) {
-        setProcessedAsset({
-          id: result.id,
-          url: result.url,
-          filename: result.filename || '',
-        });
-      }
+
+      const filename = imageFile.name || '';
+      setPreview(imageUrl);
+      setProductName(filename || '');
+      setProcessedAsset({
+        id: result.id,
+        url: imageUrl,
+        filename,
+      });
     } catch (err) {
       console.error('Failed to process image', err);
+      toast.error('Something went wrong while processing the image. Please try again.');
       setError('Something went wrong while processing the image. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -118,7 +124,7 @@ function UploadProductModal({ onClose }) {
       <div className="flex flex-1 flex-col sm:flex-row">
         <section className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10">
           {isProcessing ? (
-            <div className="flex h-72 w-full max-w-md flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground sm:h-88 sm:max-w-lg">
+            <div className="flex h-72 w-full max-w-md flex-col items-center justify-center rounded-[10px] border-3 border-dashed border-border bg-card text-center text-sm text-muted-foreground sm:h-88 sm:max-w-lg">
               <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-main border-t-transparent" />
               <p className="font-medium text-foreground">Removing background...</p>
               <p className="mt-2 max-w-xs text-xs text-muted-foreground">
@@ -129,7 +135,7 @@ function UploadProductModal({ onClose }) {
             <div
               {...getRootProps()}
               onClick={onClickUpload}
-              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-88 sm:max-w-lg"
+              className="flex h-72 w-full max-w-md cursor-pointer flex-col items-center justify-center rounded-[10px] border-3 border-dashed border-border bg-card text-center text-sm text-muted-foreground transition hover:border-main hover:bg-section sm:h-88 sm:max-w-lg"
             >
               <input {...getInputProps()} className="hidden" />
               <div className="mb-4 text-3xl">🖼️</div>

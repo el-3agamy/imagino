@@ -16,9 +16,7 @@ export default function MasonryGallaryLayout() {
       <div className="masonry-cta">
         <p className="text-white text-2xl md:text-3xl font-medium">Grow your business with AI</p>
 
-        <Button className="bg-amber-300 text-black p-3 hover:bg-amber-400">
-          Try Pebblely Free
-        </Button>
+        <Button className="bg-amber-300 text-black p-3 hover:bg-amber-400">Try Imagino Free</Button>
       </div>
     </Section>
   );

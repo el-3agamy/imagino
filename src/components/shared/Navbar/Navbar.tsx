@@ -9,12 +9,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import Container from '../Container/Container';
-import LangDropdown from './LangDropdown';
+// import LangDropdown from './LangDropdown';
 import MobileNav from './MobileNav';
+import { useTheme } from 'next-themes';
 
 const ThemeDropdown = dynamic(() => import('./ThemeDropdown'), { ssr: false });
 
 export default function Navbar() {
+  const { theme } = useTheme();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const lang = useRouteLang();
@@ -55,17 +57,17 @@ export default function Navbar() {
           <nav className="flex items-center justify-between py-5">
             <Link href={`/${lang}`} className="flex items-center gap-2">
               <Image
-                src="/logo.png"
-                width={50}
+                src={`/${theme === 'dark' ? 'logo-dark.png' : 'logo.png'}`}
+                width={125}
                 height={50}
-                alt="Pebblely Logo"
-                className="h-6 w-auto"
+                alt="Imagino Logo"
+                className=" w-auto"
               />
-              <span className="font-semibold text-lg tracking-tight dark:text-white">Pebblely</span>
+              {/* <span className="font-semibold text-lg tracking-tight dark:text-white">Imagino</span> */}
             </Link>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-              <LangDropdown />
+              {/* <LangDropdown /> */}
               <ThemeDropdown />
               <Link href={`/${lang}/home`} className="hover:opacity-80 transition">
                 Home
@@ -106,7 +108,7 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center gap-2 md:hidden">
-              <LangDropdown mobile />
+              {/* <LangDropdown mobile /> */}
               <ThemeDropdown mobile />
               {isAuth && avatar}
               <button

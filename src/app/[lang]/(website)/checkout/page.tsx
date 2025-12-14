@@ -1,33 +1,32 @@
-import Container from '@/components/shared/Container/Container'
-import Image from 'next/image'
-import { Input } from "@/components/ui/input"
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import Container from '@/components/shared/Container/Container';
+import Image from 'next/image';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useTheme } from 'next-themes';
 export default function Checkout() {
+  const { theme } = useTheme();
   return (
     <Container className="py-16">
       <div className="w-full max-w-2xl mx-auto bg-white shadow-xl rounded-3xl p-10 border border-gray-200">
-
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Image
-            src="/logo.png"
-            width={40}
-            height={40}
+            src={`/${theme === 'dark' ? 'logo-dark.png' : 'logo.png'}`}
+            width={100}
+            height={50}
             alt="brand_logo"
             className="rounded-xl"
           />
           <div>
             <h1 className="text-2xl font-bold text-foreground">Checkout</h1>
-            <p className="text-muted-foreground text-sm">Subscribe to Pebblely Pro</p>
+            <p className="text-muted-foreground text-sm">Subscribe to Imagino Pro</p>
           </div>
         </div>
 
         {/* Pricing Summary */}
         <div className="bg-muted/40 p-6 rounded-2xl mb-6">
-          <p className="text-muted-foreground text-sm">
-            Annual subscription
-          </p>
+          <p className="text-muted-foreground text-sm">Annual subscription</p>
           <p className="text-3xl font-bold text-foreground">
             $379.00 <span className="text-base font-medium text-muted-foreground"> / year</span>
           </p>
@@ -47,7 +46,7 @@ export default function Checkout() {
               className="rounded-xl"
             />
             <div>
-              <p className="font-semibold text-lg">Pebblely Pro</p>
+              <p className="font-semibold text-lg">Imagino Pro</p>
               <p className="text-muted-foreground text-sm">Unlimited images + advanced tools</p>
             </div>
           </div>
@@ -60,8 +59,11 @@ export default function Checkout() {
         <div className="mb-6">
           <Label className="text-sm font-semibold">Coupon</Label>
           <div className="flex gap-3 mt-2">
-            <Input placeholder="Enter coupon code" className="rounded-xl"/>
-            <Button variant="secondary" className="rounded-xl px-6 font-semibold hover:text-gray-600 cursor-pointer">
+            <Input placeholder="Enter coupon code" className="rounded-xl" />
+            <Button
+              variant="secondary"
+              className="rounded-xl px-6 font-semibold hover:text-gray-600 cursor-pointer"
+            >
               Apply
             </Button>
           </div>
@@ -82,9 +84,7 @@ export default function Checkout() {
         <Button className="bg-main-hover hover:bg-main text-black  text-xl font-bold w-full py-7 rounded-2xl">
           Pay With Stripe
         </Button>
-
       </div>
     </Container>
   );
 }
-

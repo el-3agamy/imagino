@@ -38,7 +38,11 @@ const SELECTED_BACKGROUND_ENDPOINT = 'image/gen-img-with-selected-background';
 const LOGIN_PATH_ON_AUTH_EXPIRED = `/${defaultLang}/auth/login?authExpired=1`;
 
 function redirectOnAuthExpired(error: unknown) {
-  if (error instanceof Error && error.message === 'AUTH_EXPIRED') {
+  if (
+    error instanceof Error &&
+    (error.message === 'AUTH_EXPIRED' || error.message === 'Invalid authorization')
+  ) {
+    console.warn('error msg', error.message, 'redirecting to login...');
     redirect(LOGIN_PATH_ON_AUTH_EXPIRED);
   }
 }
@@ -498,15 +502,7 @@ export async function getImageWithoutBackground(formData: FormData): Promise<Rem
   } catch (error) {
     console.error('Remove-bg API error:❌❌', error);
     redirectOnAuthExpired(error);
-    return {
-      id: '',
-      type: 'remove-bg',
-      status: 'failed',
-      createdAt: new Date().toISOString(),
-      imageSrc: undefined,
-      originalImageSrc: undefined,
-      enhancedImageSrc: undefined,
-    };
+    throw error;
   }
 }
 
@@ -570,8 +566,21 @@ export async function changeImageStyle(file: File, style: string): Promise<Chang
   }
 }
 
-export async function extractTextFromImage(formData: FormData): Promise<ExtractTextHistoryItem> {
+export async function extractTextFromImage(params: {
+  file?: File;
+  imageId?: string;
+}): Promise<ExtractTextHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+  const { file, imageId } = params;
+
+  if (!file && !imageId) {
+    throw new Error('Provide an image file or imageId');
+  }
+
+  const formData = new FormData();
+  if (file) formData.append('image', file);
+  if (imageId) formData.append('imageId', imageId);
+
   try {
     const json = await fetchApi<ExtractTextResponse>('image/extract-text-from-img', {
       method: 'POST',
@@ -592,18 +601,25 @@ export async function extractTextFromImage(formData: FormData): Promise<ExtractT
   } catch (error) {
     console.error('Extract-text API error:❌❌', error);
     redirectOnAuthExpired(error);
-    return {
-      id: '',
-      text: '',
-      createdAt: new Date().toISOString(),
-    };
+    throw error;
   }
 }
 
-export async function recognizeItemsInImage(
-  formData: FormData
-): Promise<RecognizeItemsHistoryItem> {
+export async function recognizeItemsInImage(params: {
+  file?: File;
+  imageId?: string;
+}): Promise<RecognizeItemsHistoryItem> {
   const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+  const { file, imageId } = params;
+
+  if (!file && !imageId) {
+    throw new Error('Provide an image file or imageId');
+  }
+
+  const formData = new FormData();
+  if (file) formData.append('image', file);
+  if (imageId) formData.append('imageId', imageId);
+
   try {
     const json = await fetchApi<RecognizeItemsResponse>('image/recognize-items-in-img', {
       method: 'POST',
@@ -625,11 +641,6 @@ export async function recognizeItemsInImage(
   } catch (error) {
     console.error('Recognize-items API error:❌❌', error);
     redirectOnAuthExpired(error);
-    return {
-      id: '',
-      items: [],
-      totalItemsDetected: 0,
-      createdAt: new Date().toISOString(),
-    };
+    throw error;
   }
 }

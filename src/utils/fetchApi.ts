@@ -121,7 +121,10 @@ function isJwtExpiredResponse(status: number, body: unknown) {
     const errMsg = (body as { errMsg?: unknown }).errMsg;
     if (typeof errMsg === 'string') {
       console.log('Error message from API:🧧🧧', errMsg, '🧧🧧');
-      return errMsg.toLowerCase().includes('jwt expired');
+      return (
+        errMsg.toLowerCase().includes('jwt expired') ||
+        errMsg.toLowerCase().includes('invalid authorization')
+      );
     }
   }
   return false;

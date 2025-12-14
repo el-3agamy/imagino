@@ -4,8 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Container from '../Container/Container';
+import { useTheme } from 'next-themes';
 
 export default function Footer() {
+  const { theme } = useTheme();
   const pathname = usePathname();
 
   if (pathname.includes('/auth') || pathname.includes('/dashboard')) return null;
@@ -18,18 +20,18 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-sm">
           <div>
             <Image
-              width={50}
+              width={100}
               height={50}
-              src="/logo.png"
-              alt="Pebblely logo"
-              className="h-6 w-auto mb-4"
+              src={`/${theme === 'dark' ? 'logo-dark.png' : 'logo.png'}`}
+              alt="Imagino logo"
+              className=" w-auto mb-4"
             />
             <p className="mt-4 text-neutral-500 dark:text-neutral-400 text-xs">
-              Pebblely Pte Ltd © {year}
+              Imagino Pte Ltd © {year}
             </p>
           </div>
 
-          <FooterColumn title="Products" items={['Pebblely', 'Pebblely API']} />
+          <FooterColumn title="Products" items={['Imagino', 'Imagino API']} />
           <FooterColumn
             title="Company"
             items={['TikTok', 'Instagram', 'Twitter', '小红书', 'Contact']}

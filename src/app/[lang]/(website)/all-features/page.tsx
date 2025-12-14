@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 // shadcn components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,14 +22,19 @@ import {
   blurRegion,
   changeImageStyle,
   extractTextFromImage,
+  getImage,
   genImgWithNewBackground,
+  genImgWithSelectedBackground,
   genSuitableBackgroundById,
   getImageWithoutBackground,
+  resizeImage,
   recognizeItemsInImage,
 } from '@/services/images.service';
 import { RecognizeItemsHistoryItem } from '@/types/RecognizeItemsHistory';
 import { genImageWithNewDimension, inhanceImageQuality } from '@/services/images.service';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
+
+type SuitableBackgroundItem = { id: string; imageSrc: string };
 
 export default function AllFeatures() {
   const anglePresets = [
@@ -68,10 +74,18 @@ export default function AllFeatures() {
     naturalWidth: 0,
     naturalHeight: 0,
   });
+  const [showResizeOptions, setShowResizeOptions] = useState(false);
+  const [resizeWidth, setResizeWidth] = useState('');
+  const [resizeHeight, setResizeHeight] = useState('');
+  const [resizeFit, setResizeFit] = useState('inside');
+  const [suitableBackgrounds, setSuitableBackgrounds] = useState<SuitableBackgroundItem[]>([]);
+  const [selectedBackgroundId, setSelectedBackgroundId] = useState<string | null>(null);
+  const [suitableBgLoading, setSuitableBgLoading] = useState(false);
   const [dragMode, setDragMode] = useState<
     'move' | 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w' | null
   >(null);
   const dragStartRef = useRef({ x: 0, y: 0, rect: { x: 0, y: 0, width: 0, height: 0 } });
+  const searchParams = useSearchParams();
   const provider = 'cloudinary';
   const inputRef = useRef<HTMLInputElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
@@ -113,6 +127,36 @@ export default function AllFeatures() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    const imageIdFromQuery = searchParams.get('assetId');
+    if (!imageIdFromQuery || ImageId === imageIdFromQuery) return;
+
+    const loadImage = async () => {
+      setProcessing(true);
+      try {
+        const res = await getImage(imageIdFromQuery);
+
+        const doc = res?.result?.image;
+        const url = doc?.url;
+        if (!url) {
+          console.warn('No usable URL on image document', doc);
+          throw new Error('No image URL returned for this asset.');
+        }
+
+        setPreview(url);
+        console.log('ImageId👉👉', doc?._id);
+        setImageId(doc?._id);
+      } catch (err) {
+        console.error('Failed to load image from query param', err);
+        toast.error('Could not load the shared image.');
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    loadImage();
+  }, [searchParams]);
 
   useEffect(() => {
     const handleMove = (e: MouseEvent) => {
@@ -224,6 +268,7 @@ export default function AllFeatures() {
     if (!preview) return;
     const a = document.createElement('a');
     a.href = preview;
+    a.target = '_blank';
     a.download = 'product-shot.png';
     document.body.appendChild(a);
     a.click();
@@ -240,6 +285,7 @@ export default function AllFeatures() {
 
       if (enhancedUrl) {
         setPreview(enhancedUrl);
+        setImageId(res.result.enhanced._id || ImageId);
         // setHistory((h) => [enhancedUrl, ...h].slice(0, 20));
       }
     } catch (err) {
@@ -276,7 +322,7 @@ export default function AllFeatures() {
 
       if (rotatedUrl) {
         setPreview(rotatedUrl);
-        // setHistory((h) => [rotatedUrl, ...h].slice(0, 20));
+        setImageId(res.result.enhanced._id || ImageId);
       }
     } catch (err) {
       console.error(err);
@@ -304,7 +350,6 @@ export default function AllFeatures() {
       }
 
       setPreview(imageUrl);
-      // setHistory((h) => [imageUrl, ...h].slice(0, 20));
       setImageId(result.id);
     } catch (err) {
       console.error(err);
@@ -315,17 +360,54 @@ export default function AllFeatures() {
   }
 
   async function generateSuitableBg() {
-    if (!ImageId)
-      return toast.error('Need to remove background first to get Generate new background.');
-    setProcessing(true);
+    if (!ImageId) {
+      toast.error('Need to remove background first to get Generate new background.');
+      return;
+    }
+    setSuitableBgLoading(true);
     try {
       const result = await genSuitableBackgroundById(ImageId);
-      if (!result.imageSrc) throw new Error('No image returned from suitable-background');
-      setPreview(result.imageSrc);
-      // setHistorySuitableBg((h) => [result, ...h].slice(0, 20));
+      const { id, imageSrc } = result;
+      if (!imageSrc || !id) throw new Error('No image returned from suitable-background');
+      setSuitableBackgrounds((prev) => [{ id, imageSrc }, ...prev.filter((bg) => bg.id !== id)]);
+      setSelectedBackgroundId((current) => current || id);
+      toast.success('Background generated');
     } catch (err) {
       console.error(err);
       toast.error('Error generating suitable background — check console.');
+    } finally {
+      setSuitableBgLoading(false);
+    }
+  }
+
+  async function generateWithSelectedBackground() {
+    if (!ImageId) {
+      toast.error('Remove the background first to apply a new one.');
+      return;
+    }
+    if (!selectedBackgroundId) {
+      toast.error('Select a generated background first.');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const res = await genImgWithSelectedBackground({
+        productImageId: ImageId,
+        backgroundImageId: selectedBackgroundId,
+      });
+      const generatedUrl = res?.result?.generatedImage?.url;
+
+      if (!generatedUrl) {
+        throw new Error('No generated image returned from selected-background API');
+      }
+
+      setPreview(generatedUrl);
+      setImageId(res.result.generatedImage._id || ImageId);
+      toast.success('Applied selected background');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error applying selected background — check console.');
     } finally {
       setProcessing(false);
     }
@@ -347,7 +429,6 @@ export default function AllFeatures() {
       }
 
       setPreview(generatedUrl);
-      // setHistory((h) => [generatedUrl, ...h].slice(0, 20));
       setImageId(res.result.generatedImage._id || ImageId);
     } catch (err) {
       console.error(err);
@@ -362,7 +443,6 @@ export default function AllFeatures() {
     try {
       const result = await changeImageStyle(file, style);
       setPreview(result.enhancedImageSrc || '');
-      // setHistoryChangeStyle((h) => [result, ...h].slice(0, 20));
       setImageId(result.id);
     } catch (err) {
       if (err instanceof Error && err.message === 'AUTH_EXPIRED') {
@@ -379,20 +459,25 @@ export default function AllFeatures() {
     }
   }
 
-  async function callExtractText(file: File) {
+  async function callExtractText(fileParam?: File) {
+    const sourceFile = fileParam || file || undefined;
+    const sourceImageId = ImageId || undefined;
+
+    if (!sourceFile && !sourceImageId) {
+      toast.error('Upload an image or load an existing one first.');
+      return;
+    }
+
     setProcessing(true);
 
     try {
-      const fd = new FormData();
-      fd.append('image', file);
+      const result = await extractTextFromImage({
+        file: sourceFile,
+        imageId: sourceImageId,
+      });
 
-      // استدعاء الـ API
-      const result = await extractTextFromImage(fd);
-
-      // تحديث الـ state بناءً على النتيجة مباشرة
       setExtractedText(result.text);
-      // setHistoryExtractText((h) => [result, ...h].slice(0, 20));
-      setRecognizedItems(null); // مسح العناصر المتعرف عليها عند استخراج النص
+      setRecognizedItems(null);
     } catch (err) {
       console.error(err);
       toast.error('Error extracting text — check console.');
@@ -402,22 +487,82 @@ export default function AllFeatures() {
   }
 
   async function callRecognizeItems() {
-    if (!file) return;
+    const sourceFile = file || undefined;
+    const sourceImageId = ImageId || undefined;
+
+    if (!sourceFile && !sourceImageId) {
+      toast.error('Upload an image or load an existing one first.');
+      return;
+    }
+
     setProcessing(true);
 
     try {
-      const fd = new FormData();
-      fd.append('image', file);
-
-      const result = await recognizeItemsInImage(fd);
+      const result = await recognizeItemsInImage({
+        file: sourceFile,
+        imageId: sourceImageId,
+      });
       console.log('Recognize-items result:', result);
 
       setRecognizedItems(result);
       // setRecognizeItemsHistory((h) => [result, ...h].slice(0, 20));
-      setExtractedText(''); // مسح النص المستخرج عند التعرف على العناصر
+      setExtractedText('');
     } catch (err) {
       console.error(err);
       toast.error('Error recognizing items — check console.');
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  async function callResizeCurrentImage() {
+    const sourceFile = ImageId ? undefined : file || undefined;
+    const sourceImageId = ImageId || undefined;
+
+    if (!sourceFile && !sourceImageId) {
+      toast.error('Upload an image or load an existing one first.');
+      return;
+    }
+
+    if (!resizeWidth && !resizeHeight) {
+      toast.error('Provide width, height, or both.');
+      return;
+    }
+
+    const widthNumber = resizeWidth ? Number(resizeWidth) : undefined;
+    const heightNumber = resizeHeight ? Number(resizeHeight) : undefined;
+
+    if (
+      (widthNumber !== undefined && (!Number.isFinite(widthNumber) || widthNumber <= 0)) ||
+      (heightNumber !== undefined && (!Number.isFinite(heightNumber) || heightNumber <= 0))
+    ) {
+      toast.error('Width and height must be positive numbers.');
+      return;
+    }
+
+    setProcessing(true);
+
+    try {
+      const res = await resizeImage({
+        imageId: sourceImageId,
+        file: sourceFile,
+        width: widthNumber,
+        height: heightNumber,
+        fit: resizeFit || undefined,
+      });
+
+      const newUrl = res?.result?.resizedImage?.url;
+
+      if (!newUrl) {
+        toast.error('No image returned from resize API.');
+        return;
+      }
+
+      setImageId(res.result.resizedImage._id || ImageId);
+      setPreview(newUrl);
+    } catch (err) {
+      console.error(err);
+      toast.error('Error resizing image — check console.');
     } finally {
       setProcessing(false);
     }
@@ -463,6 +608,7 @@ export default function AllFeatures() {
 
       if (newUrl) {
         setPreview(newUrl);
+        setImageId(res.result.blurredImage._id || ImageId);
       }
     } catch (err) {
       console.error(err);
@@ -474,7 +620,6 @@ export default function AllFeatures() {
 
   return (
     <main className="min-h-screen bg-gradient from-white to-slate-50 text-slate-900 p-8">
-      <Toaster position="top-center" />
       <header className="max-w-6xl mx-auto mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -482,7 +627,7 @@ export default function AllFeatures() {
               <ImageIcon className="w-7 h-7 text-slate-700" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold">Pebblely — All Features</h1>
+              <h1 className="text-2xl font-semibold">Imagino — All Features</h1>
             </div>
           </div>
         </div>
@@ -552,8 +697,8 @@ export default function AllFeatures() {
                   </Button>
 
                   <Button
-                    onClick={() => callExtractText(file!)}
-                    disabled={!file || processing}
+                    onClick={() => callExtractText()}
+                    disabled={(!file && !ImageId) || processing}
                     className="rounded-2xl"
                   >
                     <Cpu className="w-4 h-4 mr-2" />
@@ -562,26 +707,25 @@ export default function AllFeatures() {
 
                   <Button
                     onClick={callRecognizeItems}
-                    disabled={!file || processing}
+                    disabled={(!file && !ImageId) || processing}
                     className="rounded-2xl"
                   >
                     <Scan className="w-4 h-4 mr-2" />
                     Recognize Items
                   </Button>
                 </div>
-                {/* Head */}
 
                 <div className="mt-2 space-y-2">
                   <Button
                     variant="outline"
                     onClick={() => setShowRotate((prev) => !prev)}
-                    className="w-full rounded-2xl"
+                    className="w-full rounded-2xl border-2 border-slate-700"
                   >
-                    Rotate (angle)
+                    Extract Object in dimensions
                   </Button>
 
                   {showRotate && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-3 flex flex-col gap-2">
+                    <div className="rounded-2xl border border-slate-300 bg-white p-3 flex flex-col gap-2">
                       <select
                         value={angle}
                         onChange={(e) => setAngle(e.target.value)}
@@ -617,13 +761,13 @@ export default function AllFeatures() {
                       }
                       setShowBlurRegion((prev) => !prev);
                     }}
-                    className="w-full rounded-2xl"
+                    className="w-full rounded-2xl border-2 border-slate-700"
                   >
                     Blur Region
                   </Button>
 
                   {showBlurRegion && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-3 flex flex-col gap-3">
+                    <div className="rounded-2xl border border-slate-300 bg-white p-3 flex flex-col gap-3">
                       <label className="text-sm text-slate-600 flex items-center justify-between gap-2">
                         <span>Blur radius</span>
                         <span className="text-slate-800 font-medium">{blurRadius}</span>
@@ -647,6 +791,71 @@ export default function AllFeatures() {
                     </div>
                   )}
                 </div>
+
+                <div className="mt-2 space-y-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowResizeOptions((prev) => !prev)}
+                    className="w-full rounded-2xl border-2 border-slate-700"
+                  >
+                    Resize Image
+                  </Button>
+
+                  {showResizeOptions && (
+                    <div className="rounded-2xl border border-slate-300 bg-white p-3 flex flex-col gap-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="text-sm text-slate-600 flex flex-col gap-1">
+                          <span>Width</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={resizeWidth}
+                            onChange={(e) => setResizeWidth(e.target.value)}
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200 bg-white"
+                            placeholder="e.g. 800"
+                          />
+                        </label>
+
+                        <label className="text-sm text-slate-600 flex flex-col gap-1">
+                          <span>Height</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={resizeHeight}
+                            onChange={(e) => setResizeHeight(e.target.value)}
+                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200 bg-white"
+                            placeholder="e.g. 600"
+                          />
+                        </label>
+                      </div>
+
+                      <label className="text-sm text-slate-600 flex flex-col gap-1">
+                        <span>Fit</span>
+                        <select
+                          value={resizeFit}
+                          onChange={(e) => setResizeFit(e.target.value)}
+                          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-200 bg-white"
+                        >
+                          {['cover', 'contain', 'fill', 'inside', 'outside'].map((fitOption) => (
+                            <option key={fitOption} value={fitOption}>
+                              {fitOption}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <Button
+                        onClick={callResizeCurrentImage}
+                        disabled={processing || (!file && !ImageId)}
+                        className="rounded-2xl"
+                      >
+                        Resize
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                {/*                  */}
 
                 <div className="flex gap-2 justify-between">
                   <Button variant="outline" onClick={clear} className="rounded-2xl">
@@ -831,6 +1040,68 @@ export default function AllFeatures() {
               </CardContent>
             </Card>
           )}
+
+          <Card className="rounded-2xl mt-4 shadow bg-white">
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-lg font-semibold">Generated Backgrounds</CardTitle>
+              <Button
+                onClick={generateSuitableBg}
+                disabled={suitableBgLoading || !ImageId}
+                className="rounded-2xl"
+              >
+                {suitableBgLoading ? 'Generating…' : 'Generate suitable background'}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {suitableBackgrounds.length === 0 ? (
+                <p className="text-sm text-slate-500">
+                  No backgrounds yet. Generate one to see it here.
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {suitableBackgrounds.map((bg) => {
+                      const isSelected = selectedBackgroundId === bg.id;
+                      return (
+                        <button
+                          key={bg.id}
+                          type="button"
+                          onClick={() => setSelectedBackgroundId(bg.id)}
+                          className={`relative aspect-square overflow-hidden rounded-xl border bg-slate-50 transition focus:outline-none ${
+                            isSelected
+                              ? 'border-sky-500 ring-2 ring-sky-300'
+                              : 'border-slate-200 hover:border-slate-300'
+                          }`}
+                          aria-pressed={isSelected}
+                        >
+                          <motion.img
+                            src={bg.imageSrc}
+                            alt={`bg-${bg.id}`}
+                            className="w-full h-full object-cover"
+                          />
+                          {isSelected && (
+                            <span className="absolute inset-0 border-2 border-sky-500 rounded-xl pointer-events-none" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      onClick={generateWithSelectedBackground}
+                      disabled={!selectedBackgroundId || !ImageId || processing}
+                      className="rounded-2xl w-full sm:w-auto"
+                    >
+                      Generate With Selected Background
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* add here card to show grid or generated backgrounds and can be selectable so we will pass there id later */}
         </motion.section>
       </section>
     </main>

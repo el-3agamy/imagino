@@ -1,6 +1,6 @@
 'use client';
 
-import LangDropdown from '@/components/shared/Navbar/LangDropdown';
+// import LangDropdown from '@/components/shared/Navbar/LangDropdown';
 import { useRouteLang } from '@/hooks/useLang';
 import { useAuthStore } from '@/store/authStore';
 import { Home, LogOut, Menu } from 'lucide-react';
@@ -75,7 +75,7 @@ export default function DashboardNavbar({
         </div>
 
         <div className="flex items-center gap-4">
-          <LangDropdown />
+          {/* <LangDropdown /> */}
 
           <div className="hidden md:inline-flex">
             <ThemeDropdown mobile={false} />

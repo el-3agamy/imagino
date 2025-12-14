@@ -20,7 +20,7 @@ export default function LangLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <AppInit />
-      <Toaster position="top-right" duration={1000} richColors />
+      <Toaster position="top-center" closeButton richColors toastOptions={{ duration: 4000 }} />
       <Navbar />
 
       <main lang={lang} className={`flex-1`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>

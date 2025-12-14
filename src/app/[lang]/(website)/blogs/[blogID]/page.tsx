@@ -50,7 +50,7 @@ export default async function SpecificBlog({
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                <Image src="/logo.png" alt="author" fill className="object-cover" />
+                <Image src={`/logo.png`} alt="author" fill className="object-cover" />
               </div>
             </div>
           </div>
