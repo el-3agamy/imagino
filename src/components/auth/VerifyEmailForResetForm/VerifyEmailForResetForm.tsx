@@ -69,7 +69,7 @@ export function VerifyEmailForResetForm() {
           <div
             className="rounded-2xl px-4 py-5 text-center text-xs sm:text-sm
                         bg-[#F5F5F7] text-muted-foreground
-                        dark:bg-[color:var(--card)] dark:text-card-foreground dark:border dark:border-[color:var(--border)]"
+                        dark:bg-card dark:text-card-foreground dark:border dark:border-border"
           >
             <p>We&apos;ve sent a 6-digit code to</p>
             <p className="mt-1 font-semibold text-foreground dark:text-card-foreground">
@@ -93,7 +93,7 @@ export function VerifyEmailForResetForm() {
               className="h-11 w-full rounded-lg border px-3 text-center text-sm tracking-[0.4em]
                        bg-[#F5F5F7] border-[#E4E4E7] text-foreground placeholder:text-muted-foreground/70
                        focus:outline-none focus:ring-2 focus:ring-main focus:border-transparent
-                       dark:bg-[color:var(--input)] dark:border-[color:var(--border)] dark:text-card-foreground dark:placeholder:text-[color:var(--muted-foreground)]"
+                       dark:bg-input dark:border-border dark:text-card-foreground dark:placeholder:text-muted-foreground"
               aria-invalid={!!errors.firstOtp || undefined}
               {...register('firstOtp', {
                 required: 'Code is required',
@@ -131,7 +131,7 @@ export function VerifyEmailForResetForm() {
             href={`/${lang}/auth/login`}
             className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground
                      hover:bg-[#F5F5F7] transition inline-flex items-center justify-center
-                     dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
+                     dark:bg-card dark:border-border dark:text-card-foreground dark:hover:bg-card"
           >
             Back to login
           </Link>

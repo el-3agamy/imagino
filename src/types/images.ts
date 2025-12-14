@@ -82,11 +82,14 @@ export type ResizedImageResponse = {
   result: ResizedImageResult;
 };
 
-// &  Get Image
+// &  Get Image (returns the image plus its children variants)
 export type ImageResponse = {
   message: string;
   status: number;
-  result: ImageDocument;
+  result: {
+    image: ImageDocument;
+    children: ImageDocument[];
+  };
 };
 
 export type BackgroundsForImageResult = {
@@ -139,4 +142,31 @@ export type SelectedBackgroundImageResponse = {
   message: string;
   status: number;
   result: SelectedBackgroundImageResult;
+};
+
+// & Get User Images
+export type UserImageListItem = Pick<
+  ImageDocument,
+  | '_id'
+  | 'url'
+  | 'storageKey'
+  | 'filename'
+  | 'mimeType'
+  | 'size'
+  | 'dimensions'
+  | 'status'
+  | 'isPublic'
+  | 'aiEdits'
+>;
+
+export type GetUserImagesResponse = {
+  message: string;
+  status: number;
+  result: {
+    items: UserImageListItem[];
+    page: number;
+    size: number;
+    totalCount: number;
+    totalPages: number;
+  };
 };

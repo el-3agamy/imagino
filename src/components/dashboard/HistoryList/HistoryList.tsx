@@ -1,33 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Calendar, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import type { HistoryItem, JobType, JobStatus } from '@/types/history';
+import type { UserImageListItem } from '@/types/images';
+import { getUserImages } from '@/services/images.service';
+import { toast } from 'sonner';
 
-type Props = {
-  initialItems: HistoryItem[];
-};
+type JobType = 'user-image';
+type JobStatus = 'done' | 'processing' | 'failed' | 'uploading' | 'completed' | 'deleted';
 
 function prettyType(t: JobType) {
   switch (t) {
-    case 'remove-bg':
-      return 'Background removed';
-    case 'generate-bg':
-      return 'Background generated';
-    case 'generate-3d':
-      return '3D generation';
+    case 'user-image':
+      return 'User Image';
   }
 }
 
 function StatusPill({ status }: { status: JobStatus }) {
-  if (status === 'done')
+  if (status === 'done' || status === 'completed')
     return (
       <span className="status-pill status-done" role="status" aria-label="done">
         <CheckCircle className="h-3 w-3" /> Done
       </span>
     );
-  if (status === 'processing')
+  if (status === 'processing' || status === 'uploading')
     return (
       <span className="status-pill status-processing" role="status" aria-label="processing">
         <Loader2 className="h-3 w-3 animate-spin" /> Processing
@@ -41,9 +38,36 @@ function StatusPill({ status }: { status: JobStatus }) {
   );
 }
 
-export default function HistoryList({ initialItems }: Props) {
-  const [items] = useState<HistoryItem[]>(initialItems);
-  const [selected, setSelected] = useState<HistoryItem | null>(null);
+export default function HistoryList() {
+  const [items, setItems] = useState<UserImageListItem[]>([]);
+  const [selected, setSelected] = useState<UserImageListItem | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [size] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await getUserImages({ page, size });
+        setItems(res.result?.items ?? []);
+        setTotalPages(res.result?.totalPages ?? 1);
+        setTotalCount(res.result?.totalCount ?? 0);
+      } catch (err) {
+        console.error('Failed to fetch user images', err);
+        toast.error('Could not load your images.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [page, size]);
+
+  const startIndex = items.length ? (page - 1) * size + 1 : 0;
+  const endIndex = (page - 1) * size + items.length;
 
   return (
     <section className="history-section rounded-2xl border p-4 md:p-6 shadow-sm">
@@ -57,7 +81,11 @@ export default function HistoryList({ initialItems }: Props) {
       </div>
 
       <div className="space-y-3">
-        {items.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading your images...
+          </div>
+        ) : items.length === 0 ? (
           <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">
             No history yet
           </div>
@@ -65,14 +93,14 @@ export default function HistoryList({ initialItems }: Props) {
           <ul className="space-y-3">
             {items.map((it) => (
               <li
-                key={it.id}
+                key={it._id}
                 className="history-item flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-lg transition p-3"
               >
                 <div className="relative w-full sm:w-24 h-44 sm:h-20 flex-none overflow-hidden rounded-md thumb-surface">
-                  {it.imageSrc ? (
+                  {it.url ? (
                     <Image
-                      src={it.imageSrc}
-                      alt={`thumbnail ${it.id}`}
+                      src={it.url}
+                      alt={`thumbnail ${it.filename || it._id}`}
                       fill
                       sizes="(max-width: 640px) 100vw, 80px"
                       className="object-cover"
@@ -88,34 +116,36 @@ export default function HistoryList({ initialItems }: Props) {
                   <div className="flex w-full items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
-                        <h3 className="truncate text-sm font-semibold">{prettyType(it.type)}</h3>
-                        <StatusPill status={it.status} />
+                          <h3 className="truncate text-sm font-semibold">{prettyType('user-image')}</h3>
+                          <StatusPill status={it.status === 'deleted' ? 'failed' : 'done'} />
                       </div>
                       <p className="truncate text-sm text-muted-foreground mt-1">
-                        {it.inputNotes ?? '—'}
+                          {it.filename ?? '—'}
                       </p>
                     </div>
 
                     <div className="hidden sm:flex flex-col items-end gap-2">
                       <div className="text-xs text-muted-foreground">
-                        {new Date(it.createdAt).toLocaleString()}
+                        {it.aiEdits?.[0]?.timestamp
+                          ? new Date(it.aiEdits[0].timestamp).toLocaleString()
+                          : ''}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-2 flex flex-col items-start gap-2 sm:hidden">
                     <div className="text-xs text-muted-foreground">
-                      {new Date(it.createdAt).toLocaleString()}
+                      {it.aiEdits?.[0]?.timestamp
+                        ? new Date(it.aiEdits[0].timestamp).toLocaleString()
+                        : ''}
                     </div>
                     <div className="flex items-center gap-2">
-                      {it.variationCount && (
-                        <div className="rounded-md px-2 py-1 text-xs pill-surface">
-                          {it.variationCount} variations
-                        </div>
-                      )}
-                      {it.resultNotes && (
-                        <div className="text-xs text-muted-foreground">{it.resultNotes}</div>
-                      )}
+                      <div className="rounded-md px-2 py-1 text-xs pill-surface">
+                        {it.dimensions?.width} × {it.dimensions?.height}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {(it.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -130,9 +160,9 @@ export default function HistoryList({ initialItems }: Props) {
                   </button>
                   <button
                     onClick={() => {
-                      if (it.imageSrc) window.open(it.imageSrc, '_blank');
+                      if (it.url) window.open(it.url, '_blank');
                     }}
-                    className="text-sm text-[color:var(--primary)] underline"
+                    className="text-sm text-primary underline"
                   >
                     View
                   </button>
@@ -143,11 +173,37 @@ export default function HistoryList({ initialItems }: Props) {
         )}
       </div>
 
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-muted-foreground">
+          {totalCount === 0
+            ? 'No records yet'
+            : `Showing ${startIndex}-${endIndex} of ${totalCount}`}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            className="ghost-btn"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={loading || page <= 1}
+          >
+            Prev
+          </button>
+          <span className="text-sm text-muted-foreground">Page {page} / {totalPages}</span>
+          <button
+            className="ghost-btn"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={loading || page >= totalPages}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
       {selected && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`${prettyType(selected.type)} details`}
+          aria-label={`${prettyType('user-image')} details`}
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
         >
           <div
@@ -160,10 +216,12 @@ export default function HistoryList({ initialItems }: Props) {
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold">
-                  {prettyType(selected.type)} — {selected.id}
+                  {prettyType('user-image')} — {selected._id}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(selected.createdAt).toLocaleString()}
+                  {selected.aiEdits?.[0]?.timestamp
+                    ? new Date(selected.aiEdits[0].timestamp).toLocaleString()
+                    : ''}
                 </p>
               </div>
 
@@ -179,14 +237,14 @@ export default function HistoryList({ initialItems }: Props) {
               <div>
                 <div className="mb-2 text-sm font-medium">Input</div>
                 <div className="rounded-md surface-quiet p-3 text-sm">
-                  {selected.inputNotes ?? '—'}
+                  {selected.filename ?? '—'}
                 </div>
               </div>
 
               <div>
                 <div className="mb-2 text-sm font-medium">Result</div>
                 <div className="rounded-md surface-quiet p-3 text-sm">
-                  {selected.resultNotes ?? 'No details available'}
+                  {selected.storageKey || 'No details available'}
                 </div>
               </div>
 
@@ -195,8 +253,8 @@ export default function HistoryList({ initialItems }: Props) {
 
                 <div className="flex flex-wrap gap-3">
                   <div className="relative h-40 w-full sm:w-40 overflow-hidden rounded-md thumb-surface">
-                    {selected.imageSrc ? (
-                      <Image src={selected.imageSrc} alt="preview" fill className="object-cover" />
+                    {selected.url ? (
+                      <Image src={selected.url} alt="preview" fill className="object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
                         No preview
@@ -204,24 +262,19 @@ export default function HistoryList({ initialItems }: Props) {
                     )}
                   </div>
 
-                  {selected.variationCount &&
-                    Array.from({ length: selected.variationCount }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="relative h-40 w-40 overflow-hidden rounded-md thumb-surface"
-                      >
-                        <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
-                          Variation {i + 1}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="rounded-md px-2 py-1 text-xs pill-surface">
+                    {selected.dimensions?.width} × {selected.dimensions?.height}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {(selected.size / 1024 / 1024).toFixed(2)} MB
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
               <a
-                href={selected.imageSrc || '#'}
+                href={selected.url || '#'}
                 target="_blank"
                 rel="noreferrer"
                 className="outline-btn"

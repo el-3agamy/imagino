@@ -16,6 +16,7 @@ import type {
   NewBackgroundImageResponse,
   SelectedBackgroundImageResponse,
 } from '@/types/images';
+import type { GetUserImagesResponse } from '@/types/images';
 
 import { RemoveBgHistoryItem } from '@/types/removeBgHistory';
 
@@ -35,6 +36,7 @@ const BLUR_REGION_ENDPOINT = 'image/blur-image-region';
 const RESIZE_IMAGE_ENDPOINT = 'image/gen-resize-img';
 const NEW_BACKGROUND_ENDPOINT = 'image/gen-img-with-new-background';
 const SELECTED_BACKGROUND_ENDPOINT = 'image/gen-img-with-selected-background';
+const GET_USER_IMAGES_ENDPOINT = 'user/get-user-gallery';
 const LOGIN_PATH_ON_AUTH_EXPIRED = `/${defaultLang}/auth/login?authExpired=1`;
 
 function redirectOnAuthExpired(error: unknown) {
@@ -643,4 +645,29 @@ export async function recognizeItemsInImage(params: {
     redirectOnAuthExpired(error);
     throw error;
   }
+}
+
+export async function getUserImages(
+  options: { page?: number; size?: number } = {}
+): Promise<GetUserImagesResponse> {
+  const token = await getServerCookies(ACCESS_TOKEN_COOKIE_KEY);
+
+  const params = new URLSearchParams();
+  if (typeof options.page !== 'undefined') params.set('page', String(options.page));
+  if (typeof options.size !== 'undefined') params.set('size', String(options.size));
+
+  const endpoint = params.toString()
+    ? `${GET_USER_IMAGES_ENDPOINT}?${params.toString()}`
+    : GET_USER_IMAGES_ENDPOINT;
+
+  const response = await fetchApi<GetUserImagesResponse>(endpoint, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `hamada ${token || ''}`,
+    },
+    cache: 'no-cache',
+  });
+
+  return response;
 }

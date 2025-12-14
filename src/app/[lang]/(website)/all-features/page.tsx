@@ -243,7 +243,7 @@ export default function AllFeatures() {
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);
     };
-  }, [dragMode]);
+  }, [dragMode, imageBox]);
 
   const startDrag = (
     e: React.MouseEvent<HTMLDivElement | HTMLButtonElement, MouseEvent>,

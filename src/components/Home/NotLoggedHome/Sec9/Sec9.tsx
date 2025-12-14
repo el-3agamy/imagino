@@ -22,7 +22,7 @@ export default function Sec9() {
         </h3>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {items.map((item, idx) => (
+          {items.map((item) => (
             <Dialog key={item}>
               <DialogTrigger className="template-thumb">
                 <Image

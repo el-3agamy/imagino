@@ -68,7 +68,7 @@ export function ForgotPasswordForm() {
         <div className="mt-4">
           <Link
             href={`/${lang}/auth/login`}
-            className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-[color:var(--card)] dark:border-[color:var(--border)] dark:text-card-foreground dark:hover:bg-[color:var(--card)]"
+            className="h-11 w-full rounded-full border bg-white text-center text-sm font-semibold text-foreground hover:bg-[#F5F5F7] transition inline-flex items-center justify-center dark:bg-card dark:border-border dark:text-card-foreground dark:hover:bg-card"
           >
             Back to login
           </Link>
