@@ -13,7 +13,7 @@ const FALLBACK_IMAGE = '/assets/gallery/gallery1.jpg';
 export default function Gallery() {
   const [images, setImages] = useState<GalleryImageListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryImageListItem | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -68,9 +68,9 @@ export default function Gallery() {
                     tabIndex={0}
                     role="button"
                     aria-label={`Open image ${image.filename || image._id}`}
-                    onClick={() => setSelectedImage(img)}
+                    onClick={() => setSelectedImage(image)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') setSelectedImage(img);
+                      if (e.key === 'Enter' || e.key === ' ') setSelectedImage(image);
                     }}
                   >
                     <div className="img-wrap" style={{ aspectRatio: '4 / 3' }}>
