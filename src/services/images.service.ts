@@ -593,6 +593,7 @@ export async function extractTextFromImage(params: {
       },
       body: formData,
     });
+    console.log(json)
 
     console.log('Extract-text API full response:', json);
 

@@ -475,10 +475,12 @@ export default function AllFeatures() {
         file: sourceFile,
         imageId: sourceImageId,
       });
+      console.log(result)
 
       setExtractedText(result.text);
       setRecognizedItems(null);
     } catch (err) {
+      console.log(err)
       console.error(err);
       toast.error('Error extracting text — check console.');
     } finally {
