@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-
-export function GET(req: NextRequest) {
+export function GET(req: Request) {
   const target = new URL('/canceled', req.url);
-  return NextResponse.redirect(target);
+  return Response.redirect(target);
 }
