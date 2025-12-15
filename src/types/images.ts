@@ -170,3 +170,37 @@ export type GetUserImagesResponse = {
     totalPages: number;
   };
 };
+
+// & Get All Images (dashboard list)
+export type GalleryImageListItem = Pick<
+  ImageDocument,
+  | '_id'
+  | 'user'
+  | 'url'
+  | 'thumbnailUrl'
+  | 'storageKey'
+  | 'filename'
+  | 'mimeType'
+  | 'size'
+  | 'dimensions'
+  | 'tags'
+  | 'title'
+  | 'description'
+  | 'category'
+  | 'isPublic'
+  | 'views'
+  | 'downloads'
+  | 'createdAt'
+  | 'updatedAt'
+>;
+
+export type GetAllImagesResponse = {
+  message: string;
+  status: number;
+  result: {
+    images: GalleryImageListItem[];
+    totalCount: number;
+    page: number;
+    size: number;
+  };
+};

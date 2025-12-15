@@ -1,11 +1,10 @@
-
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
 } from '@/components/ui/sidebar';
 import SidebarMenuItemsDummyData from './SidebarMenuItemes/SidebarMenuItems';
 
@@ -19,7 +18,6 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu className="py-16">
                 <SidebarMenuItemsDummyData></SidebarMenuItemsDummyData>
-
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

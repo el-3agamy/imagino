@@ -1,17 +1,23 @@
-import Link from 'next/link';
-
 export default function PricingCard({
   title,
   price,
   description,
   features,
   highlight,
+  buttonText,
+  onSubscribe,
+  loading,
+  disabled,
 }: {
   title: string;
   price: string;
   description?: string;
   features: string[];
   highlight?: boolean;
+  buttonText?: string;
+  onSubscribe?: () => void;
+  loading?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <div
@@ -49,19 +55,20 @@ export default function PricingCard({
       </div>
 
       <div className="mt-6">
-        <Link href="/checkout" className="block">
-          <button
-            className={`w-full py-3 rounded-lg font-medium focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]
-              ${
-                highlight
-                  ? 'bg-black text-white hover:bg-gray-900'
-                  : 'bg-black text-white hover:bg-gray-900'
-              }
-            `}
-          >
-            Subscribe Now
-          </button>
-        </Link>
+        <button
+          onClick={onSubscribe}
+          disabled={disabled || loading}
+          className={`w-full py-3 rounded-lg font-medium focus-visible:ring-2 focus-visible:ring-[color:var(--ring)]
+            ${
+              highlight
+                ? 'bg-black text-white hover:bg-gray-900'
+                : 'bg-black text-white hover:bg-gray-900'
+            }
+            ${disabled || loading ? 'opacity-70 cursor-not-allowed' : ''}
+          `}
+        >
+          {loading ? 'Redirecting…' : buttonText || 'Subscribe Now'}
+        </button>
       </div>
     </div>
   );

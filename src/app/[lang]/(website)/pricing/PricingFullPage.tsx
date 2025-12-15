@@ -27,6 +27,37 @@ const faqItems = [
 
 export default function PricingFullPage() {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<'basic' | 'pro' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubscribe = async (plan: 'basic' | 'pro') => {
+    setError(null);
+    setLoadingPlan(plan);
+    try {
+      const res = await fetch('/api/pay-with-stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Failed to create checkout session');
+      }
+
+      const checkoutUrl: string | undefined = data?.result?.checkoutSession?.url;
+      if (!checkoutUrl) {
+        throw new Error('Checkout URL not returned');
+      }
+
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to start checkout';
+      setError(message);
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <section className="min-h-screen bg-background text-foreground">
@@ -68,6 +99,7 @@ export default function PricingFullPage() {
               '40+ background themes',
               '90-day storage for inactive users',
             ]}
+            buttonText="Start Useing Free"
           />
 
           <PricingCard
@@ -87,6 +119,10 @@ export default function PricingFullPage() {
               'Add logo or badge',
               'Unlimited storage',
             ]}
+            buttonText="Subscribe Basic"
+            onSubscribe={() => handleSubscribe('basic')}
+            loading={loadingPlan === 'basic'}
+            disabled={!!loadingPlan && loadingPlan !== 'basic'}
           />
 
           <PricingCard
@@ -95,8 +131,18 @@ export default function PricingFullPage() {
             description="Billed $379 annually"
             highlight
             features={['Every feature in Basic', 'Unlimited images', 'Priority support']}
+            buttonText="Subscribe Pro"
+            onSubscribe={() => handleSubscribe('pro')}
+            loading={loadingPlan === 'pro'}
+            disabled={!!loadingPlan && loadingPlan !== 'pro'}
           />
         </div>
+
+        {error && (
+          <div className="mt-6 text-center text-sm text-red-600" role="alert">
+            {error}
+          </div>
+        )}
 
         {/* FAQ */}
         <div className="max-w-4xl mx-auto mt-14 px-2">

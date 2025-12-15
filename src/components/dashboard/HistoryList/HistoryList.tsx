@@ -116,11 +116,13 @@ export default function HistoryList() {
                   <div className="flex w-full items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
-                          <h3 className="truncate text-sm font-semibold">{prettyType('user-image')}</h3>
-                          <StatusPill status={it.status === 'deleted' ? 'failed' : 'done'} />
+                        <h3 className="truncate text-sm font-semibold">
+                          {prettyType('user-image')}
+                        </h3>
+                        <StatusPill status={it.status === 'deleted' ? 'failed' : 'done'} />
                       </div>
                       <p className="truncate text-sm text-muted-foreground mt-1">
-                          {it.filename ?? '—'}
+                        {it.filename ?? '—'}
                       </p>
                     </div>
 
@@ -173,7 +175,7 @@ export default function HistoryList() {
         )}
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-4 rounded-lg surface-quiet p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-2">
         <div className="text-sm text-muted-foreground">
           {totalCount === 0
             ? 'No records yet'
@@ -182,15 +184,17 @@ export default function HistoryList() {
 
         <div className="flex items-center gap-2">
           <button
-            className="ghost-btn"
+            className="outline-btn"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={loading || page <= 1}
           >
             Prev
           </button>
-          <span className="text-sm text-muted-foreground">Page {page} / {totalPages}</span>
+          <span className="text-sm text-muted-foreground">
+            Page {page} / {totalPages}
+          </span>
           <button
-            className="ghost-btn"
+            className="primary-btn"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={loading || page >= totalPages}
           >

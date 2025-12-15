@@ -8,14 +8,22 @@ import { useRouteLang } from '@/hooks/useLang';
 import { languages } from '@/i18n/settings';
 import { useRouter } from 'next/navigation';
 import { Toaster } from 'sonner';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function LangLayout({ children }: { children: React.ReactNode }) {
   const lang = useRouteLang();
   const router = useRouter();
+  const [isValidLang, setIsValidLang] = useState(true);
+  const isSupportedLang = useMemo(() => languages.some((l) => l.code === lang), [lang]);
 
-  if (!languages.find((l) => l.code === lang)) {
-    router.replace('/en');
-  }
+  useEffect(() => {
+    if (!isSupportedLang) {
+      setIsValidLang(false);
+      router.replace('/en');
+    } else {
+      setIsValidLang(true);
+    }
+  }, [isSupportedLang, router]);
 
   return (
     <>
@@ -23,9 +31,11 @@ export default function LangLayout({ children }: { children: React.ReactNode }) 
       <Toaster position="top-center" closeButton richColors toastOptions={{ duration: 4000 }} />
       <Navbar />
 
-      <main lang={lang} className={`flex-1`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-        {children}
-      </main>
+      {isValidLang ? (
+        <main lang={lang} className={`flex-1`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          {children}
+        </main>
+      ) : null}
       <Footer />
     </>
   );

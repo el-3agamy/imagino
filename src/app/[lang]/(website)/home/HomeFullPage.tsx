@@ -15,6 +15,7 @@ import Loader from '@/components/shared/Loader/Loader';
 import Section from '@/components/shared/Section/Section';
 import { useAuthStore } from '@/store/authStore';
 import { ArrowDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -22,6 +23,7 @@ export default function HomeFullPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const isAuth = useAuthStore((s) => s.isAuthenticated);
   const loading = useAuthStore((s) => s.loading);
+  const router = useRouter();
 
   const sampleImages = [
     '/assets/Home/product1.jpg',
@@ -92,6 +94,7 @@ export default function HomeFullPage() {
                           <button
                             className="pointer-events-auto rounded-lg bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm
                               dark:bg-main-dark dark:hover:bg-main-dark-hover"
+                            onClick={() => router.push('/en/all-features')}
                           >
                             Generate
                           </button>
@@ -149,6 +152,7 @@ export default function HomeFullPage() {
                             <button
                               className="pointer-events-auto rounded-lg bg-main px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-main-hover sm:px-4 sm:text-sm
                                 dark:bg-main-dark dark:hover:bg-main-dark-hover"
+                              onClick={() => router.push('/en/all-features')}
                             >
                               Generate
                             </button>
